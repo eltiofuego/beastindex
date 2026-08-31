@@ -194,75 +194,85 @@ Two structural notes for the API contract:
   K-Means over the 3-arena vector (plan §6 Tahap 4) is a genuinely different output and needs
   the tier ladder redesigned around it, or the two need to coexist deliberately.
 
-## 6. The population problem — recommendation
+## 6. Pools: what shipped, and the model that did not
 
-**Don't pick one population. Make the comparison pool a visible control, and default it to
-"everyone".**
+Every pool on the site is a population that was **measured**. None is derived from
+another. That is a narrower claim than section 6.2's original plan, and the reason is
+below.
 
-The design already ships this pattern: v4/BEAST INDEX has a scope selector for
-country / region / continent / world. Add a second axis — *who* you are measured against —
-and the biggest correctness risk in the project turns into its most shareable feature.
+| Arena | Pools live | Backed by | n |
+|---|---|---|---|
+| STRONG | First-timers · Competitors | OpenPowerlifting (debut meets / all meets) | 199k · 560k |
+| FAST | Marathoners | NYC Marathon 2025 finishers | 56k |
+| FIT | Everyone | Korea Sports Promotion Foundation | 13k |
 
-| Pool | Backed by | Live today |
-|---|---|---|
-| **Everyone** | NHANES / KSPO, measured, general population | FIT only |
-| **Competitors** | OpenPowerlifting / NYC Marathon finishers | STRONG, FAST |
+STRONG's two pools are a genuinely useful contrast: a 200/140/240 lifter is a **Grizzly
+among first-timers (77th)** but an **Ox among all competitors**. Same lift, different room.
 
-Shipped state: the control is built and every option carries a plain-language reason when it is
-greyed out (`POOL_GAP` in `web/app.js`). No arena offers both pools yet — that is the honest
-position, and closing it is decision 2 below.
+### 6.1 The mixture model — built, tested, rejected
 
-Why this and not the alternatives:
+The plan was to convert percentiles between pools with a two-stratum mixture: adults
+either train (share `p`) or do not, so
 
-- **It is honest.** Every number is traceable to a named dataset. No blend that we would have
-  to hand-wave about on the methodology page.
-- **The contrast is the product.** The same 140 kg deadlift makes you a Grizzly among everyone
-  and a House Cat among competitors. That gap is funny, true, and screenshot-worthy — it is
-  free content, and it gives the user a reason to move the control.
-- **No redesign.** It reuses a control the UI already has, in the same visual language.
-- **The ladder stays meaningful.** Compare everyone against competitive lifters only and ~90%
-  of visitors are Sloths and House Cats forever. Six ranks collapse into two.
+```
+pct_everyone = (1-p)*100 + p * pct_trained
+```
 
-Default to **Everyone**, because a first-time visitor is a normal person and telling them they
-are bottom-1% is how you lose them in five seconds. "Competitors" is the opt-in flex.
+`p` came from real data — NHANES PAQ650 vigorous recreational activity, cycles 2011-2014,
+survey-weighted (n=11,976). It reproduces the published CDC figure closely: 30.7% of men
+and 20.8% of women overall, falling from 54.5% of men aged 18-24 to 11.9% at 60+.
 
-### 6.1 How each arena bridges the two anchors
+**It produces impossible numbers.** For men 30-34, `p = 43%`, which puts a hard floor at
+the 57th percentile — anyone who lifts at all is instantly above 57% of adults, and the
+whole competitive range is compressed into 57-100:
 
-**FAST — the competitive tail is clean; the general-population end is NOT.** NYC Marathon gives
-measured finish times and works today. The VDOT bridge I expected to carry the "everyone" pool
-was **built, tested and rejected**: converting a race time to VDOT and placing it on the NHANES
-VO2max distribution compares two incompatible scales. NHANES VO2max is *predicted from a
-submaximal* treadmill test (biased high); VDOT from a slow marathon is biased low, because
-marathon pace is limited by fuelling and durability, not the aerobic ceiling alone. The output
-inverted — a 5:00 marathoner scored 17% against competitors but 2% against "everyone", which is
-plainly wrong. The code is kept behind `VO2_BRIDGE = false` in `web/app.js` with the reasoning
-inline. FAST needs the same participation-weighted mixture as STRONG: finishing a marathon
-already places you in roughly the top 1% of adults, and no scale conversion substitutes for
-modelling that.
+```
+60/40/80 kg   (untrained)  ->  57th percentile
+140/100/180   (decent)     ->  60th percentile     three points apart
+```
 
-**STRONG — one modelling assumption, and it needs to be documented.** OPL gives the competitive
-tail directly and it is excellent. The problem is the general-population end: NHANES measures
-**grip**, not barbell lifts, and grip-to-total-body-strength correlates around r ≈ 0.5–0.7 in
-the literature. That is strong enough to validate the *shape and spread* of a distribution, but
-not to convert one person's grip into a squat 1RM — anyone claiming otherwise is guessing.
+Inverted for FIT it collapses the other way: everyone below the population median maps to
+the 1st percentile among the trained.
 
-Recommended instead: a **participation-weighted mixture**. Take the published share of adults
-who actually strength-train (CDC/NHIS reports it), give the untrained majority a distribution
-anchored on published civilian 1RM norms, and let OPL own the trained tail. Use the NHANES grip
-data to sanity-check the resulting spread rather than to generate it. This is the single place
-in the project with a real assumption in it, and it belongs on the methodology page in plain
-language, not buried.
+The fault is a population mismatch. `p` is the share doing *vigorous recreational activity*
+(43%), but the curve being converted is *competitive powerlifters* (~0.1% of adults). The
+model therefore assumes 43% of adults are distributed like meet competitors.
 
-**FIT — partly solved.** The Korea Sports Promotion Foundation's national fitness testing
-programme publishes row-level results for 13,393 adults aged 21-64: grip force, sit-ups, broad
-jump, body fat. It is general-population government testing, not athletes, so **sit-ups now
-have a real "everyone" curve**. Push-ups and pull-ups still have none — NHANES does not measure
-them and no credible public microdata set turned up. Remaining options for those two are US Army
-ACFT/APFT percentile tables (official and published, but aggregate rather than row-level).
+The honest reading: there are **three** strata — untrained, trains but never competes,
+competes — and the middle one, where essentially every real user sits, has no public
+measured distribution. The code and these numbers are kept in `web/app.js` behind
+`POOL_MIXTURE_ENABLED = false` so nobody rebuilds it from scratch.
 
-An unplanned bonus: the Korean grip mean (43.4 kg single hand, so ~86.8 combined) lands on top
-of the NHANES combined grip mean of 86.9 kg. Two governments, two continents, a decade apart,
-same number. That is a strong independent check that both datasets are sound.
+### 6.2 Why "everyone" cannot be measured for STRONG
+
+This is not a search failure. You cannot safely one-rep-max a random population sample,
+so nobody has collected it — which is exactly why NHANES measures grip strength and
+dynamometry instead. Grip correlates with total-body strength at only r ~ 0.5-0.7, enough
+to validate a distribution's shape but not to convert one person's grip into a squat.
+
+`debut_lifters()` in `data/build_reference.py` is the closest measured substitute: each
+lifter's first ever meet, n=296,118, median squat 15 kg below the all-meets figure for men
+and 12 kg below for women. Real, but a debut male still squats 185 kg at the median — far
+above a typical gym-goer. It narrows the gap; it does not close it.
+
+### 6.3 Routes to a real general-population pool
+
+1. **Published norm tables.** ACSM / Cooper Institute publish general-population 1RM bench
+   press ratios by age and sex. Aggregate tables rather than row-level data, so a step down
+   in quality from everything else here — but real, peer-reviewed and citable, unlike the
+   placeholders in section 3.
+2. **Collect it.** Every submission to the site is a general-population strength
+   observation. This is already Fase F of the plan, and it is the only route that ends with
+   a first-party measured distribution nobody else has.
+
+Recommend both: 1 to launch, 2 to replace it.
+
+### 6.4 FIT metrics
+
+Sit-ups and standing broad jump, both from KSPO, both user-measurable with no equipment.
+Push-ups and pull-ups were dropped: two searches across HuggingFace, GitHub and CDC found
+no row-level public data for either. NHANES does not test them. They can be added from
+published ACSM tables under the same caveat as 6.3.1.
 
 ## 7. Open decisions — need your call
 

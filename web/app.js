@@ -16,7 +16,9 @@ const ARENAS = {
       ['Spider Monkey','Ateles pendulus','Pull-ups look free from here.'],
       ['Orangutan','Pongo tenax','Long arms, longer sets, never in a hurry.'],
       ['Silverback','Gorilla dominans','The gym is your living room.']],
-    metrics:[{k:'situps',label:'Sit-ups',hint:'reps in 2 minutes',ref:'situps'}]
+    metrics:[
+      {k:'situps',label:'Sit-ups',hint:'reps in 1 minute',ref:'situps'},
+      {k:'jump',label:'Standing broad jump',hint:'cm, best of three',ref:'jump'}]
   },
   strong: {
     word:'STRONG', name:'Barbell arena', accent:'#C61F1F', photo:'img/strong.jpeg',
@@ -52,17 +54,20 @@ const ORDER = ['fit','strong','fast'];
 const TIERS = [0,20,40,62,80,93];
 const ART = {Grizzly:'img/animals/grizzly.jpeg',Cheetah:'img/animals/cheetah.jpeg',Sloth:'img/animals/sloth.jpeg'};
 
+/* Every pool is a population that was actually MEASURED. No pool is modelled, and
+   none is derived from another — see README section 6.2 for the mixture model that
+   was built, tested and rejected for producing impossible numbers. */
 const POOLS = {
-  everyone:    {name:'Everyone',        desc:'All adults, trained or not. Nationally representative health-survey data.'},
-  competitors: {name:'Competitors',     desc:'People who entered a sanctioned meet or a big-city marathon.'}
+  everyone:    {name:'Everyone',      who:'the general public',
+                desc:'A national fitness survey of the general public — trained or not.'},
+  firsttimers: {name:'First-timers',  who:'first-time competitors',
+                desc:'People at their first ever meet. Trained alone, then entered once.'},
+  competitors: {name:'Competitors',   who:'competitive lifters',
+                desc:'Every logged competition lift, novice to world record.'},
+  trained:     {name:'Marathoners',   who:'marathon finishers',
+                desc:'Everyone who finished the 2025 New York City Marathon.'}
 };
-const POOL_ORDER = ['everyone','competitors'];
-/* Why a pool is greyed out, said plainly rather than hidden. */
-const POOL_GAP = {
-  strong:'Needs a general-population barbell reference. NHANES measures grip, not lifts.',
-  fast:'Needs a participation-weighted model — finishing a marathon already puts you in ~1% of adults.',
-  fit:'No public competition dataset for bodyweight reps.'
-};
+function arenaPools(a){ return S.ref?.arenas?.[a]?.pools || []; }
 
 /* DOTS — removes bodyweight and sex bias. Kopayev et al. 2020. */
 const DOTS = {
@@ -77,7 +82,7 @@ function dotsCoeff(bw, sex){
 /* ─────────────── state ─────────────── */
 const S = {
   arena:'fit', prev:'fit', sex:'M', age:'', bw:'', vals:{},
-  pool:'everyone', country:null, q:'', ref:null, countries:[], booted:false
+  pool:'competitors', country:null, q:'', ref:null, countries:[], booted:false
 };
 const $ = id => document.getElementById(id);
 const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -98,6 +103,7 @@ function fmtTime(sec){
   return h ? `${h}:${p(m)}:${p(s)}` : `${m}:${p(s)}`;
 }
 function flagOf(iso){ return String.fromCodePoint(...iso.split('').map(c=>127397+c.charCodeAt(0))); }
+function article(w){ return /^[AEIOU]/i.test(w) ? 'an' : 'a'; }
 function possessive(n){ return /s$/i.test(n) ? n+"'" : n+"'s"; }
 function latinSub(name){
   const s=name.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z]/g,'');
@@ -129,12 +135,42 @@ function getCurve(arenaKey, refKey, pool){
   return bySex[ageBand(isNaN(age)?30:age)] || bySex.all || null;
 }
 function poolAvailable(arenaKey, pool){
-  return ARENAS[arenaKey].metrics.some(m =>
-    getCurveAnySex(arenaKey, m.ref, pool) ||
-    (VO2_BRIDGE && arenaKey==='fast' && pool==='everyone' && RACE_M[m.ref] && getCurveAnySex(arenaKey,'vo2max',pool)));
+  return ARENAS[arenaKey].metrics.some(m => getCurveAnySex(arenaKey, m.ref, pool));
 }
 function getCurveAnySex(arenaKey, refKey, pool){
   return S.ref?.arenas?.[arenaKey]?.metrics?.[refKey]?.pools?.[pool];
+}
+
+/* ── pool conversion — BUILT, TESTED, REJECTED. Not used for scoring. ──────────
+   The idea: treat adults as two strata, people who train (share p, measured by
+   NHANES PAQ650) and people who do not, then convert a percentile between them
+   with  pct_everyone = (1-p)*100 + p*pct_trained.
+
+   It is mis-specified. p is the share doing vigorous recreational activity (43%
+   of men 30-34), but the "trained" curve is built from competitive powerlifters,
+   who are ~0.1% of adults. The model therefore assumes 43% of adults are
+   distributed like meet competitors, and the output is nonsense: it puts a hard
+   floor at the 57th percentile, so an untrained lifter (60/40/80 kg) scored 57%
+   while someone lifting more than twice that scored 60%. Inverted, it drove every
+   below-median person to 1%.
+
+   The honest reading: the population has three strata — untrained, trains but
+   never competes, competes — and the middle one, where nearly every real user
+   sits, has no public measured distribution. Kept here with the numbers so the
+   next person does not rebuild it. See README section 6.2. */
+const POOL_MIXTURE_ENABLED = false;
+function participationRate(){
+  const P = S.ref?.meta?.participation?.[S.sex];
+  if(!P) return 0.26;
+  const age = parseFloat(S.age);
+  return P[ageBand(isNaN(age)?30:age)] ?? P.all ?? 0.26;
+}
+function convertPct(pct, fromPool, toPool){
+  if(fromPool===toPool) return pct;
+  const p = Math.min(0.95, Math.max(0.05, participationRate()));
+  if(fromPool==='trained' && toPool==='everyone') return (1-p)*100 + p*pct;
+  if(fromPool==='everyone' && toPool==='trained') return (pct - (1-p)*100) / p;
+  return pct;
 }
 
 /* Daniels & Gilbert VDOT. Converts a race time into an oxygen-cost estimate so a
@@ -172,14 +208,10 @@ function scoreArena(pool){
   const bw = parseFloat(S.bw)||75;
   for(const m of arena.metrics){
     const x = metricValue(m); if(x==null) continue;
-    // FAST vs the general population goes through VO2max, not finish time
-    const viaVo2 = (VO2_BRIDGE && S.arena==='fast' && pool==='everyone' && RACE_M[m.ref]);
-    const refKey = viaVo2 ? 'vo2max' : m.ref;
-    const curve = getCurve(S.arena, refKey, pool); if(!curve) continue;
-    const v = viaVo2 ? vdotFromRace(RACE_M[m.ref], x)
-            : (S.arena==='strong') ? x*dotsCoeff(bw, S.sex) : x;
+    const curve = getCurve(S.arena, m.ref, pool); if(!curve) continue;
+    const v = (S.arena==='strong') ? x*dotsCoeff(bw, S.sex) : x;
     let pct = pctOf(curve, v);
-    if(m.time && !viaVo2) pct = 100 - pct;  // lower time is better; VO2max is higher-is-better
+    if(m.time) pct = 100 - pct;             // lower time is better
     rows.push({m, x, pct:Math.min(99.4,Math.max(0.6,pct)), n:curve.n});
   }
   if(!rows.length) return null;
@@ -192,7 +224,7 @@ function result(){
   const r = scoreArena(S.pool); if(!r) return null;
   const arena = ARENAS[S.arena], tier = tierOf(r.overall);
   const rank = arena.ranks[tier];
-  const other = POOL_ORDER.find(p => p!==S.pool && poolAvailable(S.arena,p));
+  const other = arenaPools(S.arena).find(p => p!==S.pool);
   const o = other ? scoreArena(other) : null;
   const cname = S.country ? S.country.name : null;
   return {...r, arena, tier, rank, pool:S.pool,
@@ -260,16 +292,22 @@ function renderFields(){
     </div>`).join('');
 }
 function renderPools(){
-  $('pools').innerHTML = POOL_ORDER.map(p=>{
-    const ok = poolAvailable(S.arena,p), info=POOLS[p];
-    const c = ok ? getCurveAnySex(S.arena, ARENAS[S.arena].metrics[0].ref, p) : null;
-    const n = c && c[S.sex] && c[S.sex].all ? c[S.sex].all.n : null;
-    return `<button class="pool${p===S.pool&&ok?' on':''}" data-pool="${p}" ${ok?'':'disabled'}>
+  const list = arenaPools(S.arena);
+  const wrap = $('pools');
+  wrap.style.gridTemplateColumns = `repeat(${Math.min(list.length,3)},1fr)`;
+  wrap.innerHTML = list.map(p=>{
+    const info = POOLS[p];
+    const c = getCurveAnySex(S.arena, ARENAS[S.arena].metrics[0].ref, p);
+    const n = c?.[S.sex]?.all?.n;
+    return `<button class="pool${p===S.pool?' on':''}" data-pool="${p}">
       <span class="pname">${info.name}</span>
-      <span class="pdesc">${ok?info.desc:(POOL_GAP[S.arena]||'No measured data for this arena yet.')}</span>
-      ${n?`<span class="pn">n = ${n.toLocaleString()}</span>`:''}
+      <span class="pdesc">${info.desc}</span>
+      <span class="pn">${n?'measured · n = '+n.toLocaleString():'measured'}</span>
     </button>`;
   }).join('');
+  $('poolNote').textContent = list.length>1
+    ? 'Both pools are measured populations. Switching changes who you stand next to, not the maths.'
+    : 'One measured population for this arena. More pools need data that is not public yet.';
 }
 function renderSources(){
   if(!S.ref) return;
@@ -328,13 +366,14 @@ function showResult(){
       <div class="l2">${r.animal} to be supplied</div></div></div>`; }
 
   $('verdictLine').innerHTML =
-    `<span class="mut">${a.verb.toUpperCase()}</span> ${Math.round(r.overall)}% <span class="mut">OF ${POOLS[r.pool].name.toUpperCase()}</span>`;
-  $('poolCaption').textContent = `${POOLS[r.pool].name} · ${r.n.toLocaleString()} people · your sex and age band`;
+    `<span class="mut">${a.verb.toUpperCase()}</span> ${Math.round(r.overall)}% <span class="mut">OF ${POOLS[r.pool].who.toUpperCase()}</span>`;
+  $('poolCaption').textContent =
+    `${POOLS[r.pool].who} · ${r.n.toLocaleString()} people · your sex and age band`;
   $('resTitle').textContent = r.title;
   $('tagline').textContent = r.tagline;
   $('ladder').textContent = r.otherAnimal
-    ? (r.otherAnimal===r.animal ? `Among ${POOLS[r.otherPool].name.toLowerCase()}, the same verdict`
-                                : `Among ${POOLS[r.otherPool].name.toLowerCase()}, a ${r.otherAnimal}`)
+    ? (r.otherAnimal===r.animal ? `Among ${POOLS[r.otherPool].who}, the same verdict`
+                                : `Among ${POOLS[r.otherPool].who}, ${article(r.otherAnimal)} ${r.otherAnimal}`)
     : '';
 
   $('breakdown').innerHTML = r.rows.map(row=>{
@@ -384,8 +423,7 @@ function hideResult(){
 function go(next){
   if(next===S.arena) return;
   S.prev=S.arena; S.arena=next; S.vals={};
-  if(!poolAvailable(S.arena,S.pool))
-    S.pool = POOL_ORDER.find(p=>poolAvailable(S.arena,p)) || S.pool;
+  if(!arenaPools(S.arena).includes(S.pool)) S.pool = arenaPools(S.arena)[0];
   setAccent(); renderHeroBg(); renderFlip(); renderPanels();
   renderFields(); renderPools(); validity();
 }
