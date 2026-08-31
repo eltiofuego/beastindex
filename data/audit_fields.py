@@ -14,16 +14,23 @@ FIELDS = {                       # form field -> (arena, metric key in reference
     "Squat":               ("strong", "squat"),
     "Bench press":         ("strong", "bench"),
     "Deadlift":            ("strong", "deadlift"),
-    "Marathon time":       ("fast",   "marathon"),
+    "5K":                  ("fast",   "marathon"),   # via Riegel
+    "10K":                 ("fast",   "marathon"),   # via Riegel
+    "Half marathon":       ("fast",   "marathon"),   # via Riegel
+    "Marathon":            ("fast",   "marathon"),
     "Sit-ups":             ("fit",    "situps"),
     "Standing broad jump": ("fit",    "jump"),
+    "Sit and reach":       ("fit",    "reach"),
 }
 UNBACKED = {
-    "Push-ups": "No public row-level dataset. NHANES does not test it; searches of "
-                "HuggingFace, GitHub and CDC found none. ACSM publishes aggregate "
-                "tables only. Field removed from the form.",
-    "Pull-ups": "Same as push-ups. Field removed from the form.",
+    "Push-ups": "No public row-level dataset after three searches (HuggingFace, GitHub, "
+                "CDC). NHANES does not test it and it is not in the KSPO adult battery. "
+                "ACSM publishes aggregate tables only. Field not on the form.",
+    "Pull-ups": "Same as push-ups. Field not on the form.",
 }
+NOTE = ("5K / 10K / half are ranked on the marathon distribution after a Riegel (1981) "
+        "race-equivalence conversion — no standalone 5K/10K dataset exists at scale; the "
+        "largest found was a single 10K in Mozambique (~3k rows).")
 
 def main():
     ref = json.loads(REF.read_text())
@@ -51,6 +58,7 @@ def main():
     backed = len(rows)
     print(f"\n{backed}/{backed + len(UNBACKED)} form fields are backed by a trained dataset. "
           f"No field uses a placeholder formula.")
+    print(f"\nNOTE  {NOTE}")
 
 if __name__ == "__main__":
     main()

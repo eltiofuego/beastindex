@@ -245,12 +245,13 @@ def build_fit():
     print("FIT — Korea Sports Promotion Foundation")
     df = pd.read_csv(RAW / "fitness" / "body_performance_kr.csv")
     df = df.rename(columns={'sit-ups counts':'situps','gripForce':'grip',
-                            'broad jump_cm':'jump','gender':'sex'})
+                            'broad jump_cm':'jump','gender':'sex',
+                            'sit and bend forward_cm':'reach'})
     df = df[df.age.between(18,85)]
     metrics={}
     df = df.rename(columns={'weight_kg':'bw'})
-    for name,col in [('situps','situps'),('jump','jump')]:
-        d=df[df[col].notna() & (df[col]>0)]
+    for name,col in [('situps','situps'),('jump','jump'),('reach','reach')]:
+        d=df[df[col].notna()] if col=='reach' else df[df[col].notna() & (df[col]>0)]
         metrics[name]={"pools":{"everyone": by_age(d,col)},
                        "cohorts": cohort_cells(d, col, with_bw=True),
                        "regions": {}}

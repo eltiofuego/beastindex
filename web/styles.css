@@ -254,3 +254,7 @@ input:focus{border-color:var(--a);background:var(--steel)}
 .region .rgn{font-family:'Saira Condensed';font-weight:700;font-size:17px;letter-spacing:.03em;text-transform:uppercase}
 .region.on .rgn{color:var(--a)}
 .region .rgc{display:block;font-weight:600;font-size:10px;letter-spacing:.1em;color:#5F646C;margin-top:5px;text-transform:uppercase}
+.rank-line{font-family:'Saira Condensed';font-weight:700;font-size:clamp(17px,3.6vw,23px);
+  line-height:1.15;margin-top:12px;max-width:22em}
+.breakdown .expl b{font-weight:700;color:var(--bone)}
+.breakdown .expl.reg b{color:var(--bone)}

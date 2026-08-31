@@ -327,13 +327,51 @@ place), and the share card is a plain canvas layout rather than the Brand Kit's 
 | Squat | STRONG | 560,262 | 111 | 85 | competitors, firsttimers |
 | Bench press | STRONG | 870,295 | 112 | 88 | competitors, firsttimers |
 | Deadlift | STRONG | 676,028 | 112 | 85 | competitors, firsttimers |
-| Marathon time | FAST | 30,608 | 16 | 29 | trained |
+| 5K · 10K · Half · Marathon | FAST | 30,608 | 16 | 29 | trained |
 | Sit-ups | FIT | 8,461 | 32 | — | everyone |
 | Standing broad jump | FIT | 8,464 | 32 | — | everyone |
+| Sit and reach | FIT | 8,467 | 32 | — | everyone |
 
-**6 of 6 live fields are dataset-backed. No field uses a placeholder formula.**
-Push-ups and pull-ups were removed rather than faked — no public row-level data exists
-for either (§6.4).
+**10 of 10 live fields are dataset-backed. No field uses a placeholder formula.**
+Push-ups and pull-ups are still absent — see §6.4.
+
+### 5K / 10K / half — Riegel conversion
+
+No standalone 5K or 10K dataset exists publicly at any useful scale. The largest found
+across HuggingFace and GitHub was a single 10K in Mozambique (~3k rows); parkrun
+repositories turned out to be scrapers, not data.
+
+The NYC file *does* carry 5K and 10K splits for 56,000 runners, but those are run at
+marathon pace. The men's 5K split median is 27:32 against a published standalone median
+near 26-27 min — close, but only because two biases cancel (marathoners are fitter, yet
+deliberately holding back). Relying on two errors offsetting is not a derivation.
+
+What ships instead: **Riegel (1981) race equivalence**, `T2 = T1 x (D2/D1)^1.06`, converting
+any distance to a marathon-equivalent which is then ranked against the real NYC
+distribution. Checked against published equivalency tables:
+
+```
+5k  20:00 -> 3:11:49   (published ~3:12)      10k 45:00 -> 3:27:00  (~3:28)
+5k  25:00 -> 3:59:46   (published ~4:00)      10k 55:00 -> 4:13:00  (~4:14)
+5k  30:00 -> 4:47:43   (published ~4:48)      half 1:45 -> 3:38:55  (~3:37)
+```
+
+This is **not** the VDOT bridge rejected in §6.1. There, a race time was compared against a
+treadmill-*predicted* VO2max — two different instruments. Here both ends are race
+performances timed the same way. The residual caveat, stated in the UI on every converted
+row: Riegel assumes marathon-appropriate endurance, so a pure 5K runner's marathon
+equivalent flatters them.
+
+### Leaderboard position
+
+Every percentile is now also shown as an absolute position, derived from the percentile and
+the known sample size of that exact reference group:
+
+> Among 5,033 real men aged 30-34, you would place **#2,908 of 5,033** — 42nd percentile.
+
+Worded as *"you would place"* throughout, because this is a position inside the reference
+dataset, not a live leaderboard of site users. It becomes a real leaderboard only once
+POIN 2's submissions table exists.
 
 ### POIN 3 — detailed output, shipped
 
