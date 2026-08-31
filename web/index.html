@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BEASTINDEX — How fit are you, really?</title>
+<meta name="description" content="Rank your strength, speed and fitness against 2.4 million real competition lifts, 56,000 marathon finishers and nationally representative health survey data.">
+<link rel="icon" href="logo/favicon.svg">
+<meta property="og:title" content="BEASTINDEX">
+<meta property="og:description" content="Find out which animal you are. Ranked against real data.">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@700;800;900&family=Saira+Condensed:wght@600;700;800&family=Archivo:wght@400;500;600;700&family=Newsreader:ital,wght@1,300;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<main id="app" class="app">
+
+  <!-- ─────────── HERO ─────────── -->
+  <section class="hero">
+    <div class="hero-bg" id="heroBg"></div>
+    <div class="wrap hero-top">
+      <div class="row-between">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span class="brand-word">BEASTINDEX<span class="dim">.COM</span></span>
+        </div>
+        <div class="micro">Free · No signup</div>
+      </div>
+      <div class="rule-note">
+        Ranked against <strong id="sampleTotal">2.4M</strong> real competition lifts, 56,456 marathon
+        finishers and national health-survey data · <a href="#about-data">About the data</a>
+      </div>
+    </div>
+
+    <div class="wrap hero-body">
+      <div class="hero-inner">
+        <div class="eyebrow"><i class="tick"></i><span id="arenaName">Bodyweight arena</span></div>
+
+        <h1 class="headline">
+          <span>How</span>
+          <button class="flipword" id="flipWord" aria-label="Change arena"></button>
+          <span>Am I?</span>
+        </h1>
+
+        <div class="panels" id="panels"></div>
+
+        <div class="hero-actions">
+          <button class="btn-ghost" id="flipBtn">Flip the word</button>
+          <div class="hint" id="hint"><i class="caret"></i><span>Tap the word to change arena</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── CALCULATOR ─────────── -->
+  <section class="calc">
+    <div class="wrap calc-wrap">
+
+      <div class="eyebrow"><i class="tick"></i><span>About you</span></div>
+      <div class="you-grid">
+        <div>
+          <label class="lbl">Sex</label>
+          <div class="seg" id="sexSeg">
+            <button data-sex="M" class="on">Male</button>
+            <button data-sex="F">Female</button>
+          </div>
+        </div>
+        <div>
+          <label class="lbl" for="age">Age</label>
+          <input id="age" type="number" inputmode="numeric" placeholder="30" min="14" max="90">
+        </div>
+        <div>
+          <label class="lbl" for="bw">Weight kg</label>
+          <input id="bw" type="number" inputmode="decimal" placeholder="75" min="30" max="250">
+        </div>
+      </div>
+
+      <hr class="div">
+
+      <div class="eyebrow"><i class="tick"></i><span id="arenaName2">Bodyweight arena</span></div>
+      <p class="note">Fill in at least one. More entries, sharper rank.</p>
+      <p class="note" id="arenaHelp" hidden></p>
+      <div class="fields" id="fields"></div>
+
+      <hr class="div">
+
+      <!-- pool selector: the honest replacement for an invented geographic curve -->
+      <div class="lbl">Compare me against</div>
+      <p class="note">Each pool is a different real dataset. This is the setting that moves your rank most.</p>
+      <div class="pools" id="pools"></div>
+
+      <div class="country-block">
+        <div class="lbl">Where are you?</div>
+        <p class="note">Used on your card. It does not change your score.</p>
+        <div class="combo">
+          <input id="country" type="text" placeholder="Start typing a country" autocomplete="off">
+          <div class="dropdown" id="countryList" hidden></div>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="rankMe">Rank me</button>
+      <p class="note center" id="validity">Enter at least one number.</p>
+      <p class="micro center src-line" id="srcLine"></p>
+
+      <!-- ─────────── METHODOLOGY ─────────── -->
+      <div id="about-data" class="about">
+        <div class="lbl">How your rank is calculated</div>
+        <h2 class="h2">Where the numbers come from</h2>
+        <div class="about-body">
+          <p>Every rank on this site is an <strong>empirical percentile</strong> — your number placed
+             on the actual distribution of people in the pool you chose, for your sex and age band.
+             Nothing is modelled or invented.</p>
+          <div class="sources" id="sources"></div>
+          <p>Strength is normalised with the <strong>DOTS</strong> coefficient, which removes
+             bodyweight and sex bias. DOTS was chosen over Wilks on the evidence in Kopayev,
+             Onyshchenko &amp; Stetsenko (2020), which compared five powerlifting scoring formulas
+             for fairness across weight classes.</p>
+          <p class="warn">One honest caveat: the competitive pools are made of people who entered
+             a sanctioned meet or a big-city marathon. They are not the general public. If a
+             number looks brutal, check which pool you are in — that is exactly why the control
+             is there.</p>
+          <p class="strong">Estimates for fun, not medical advice.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── RESULT ─────────── -->
+  <div class="result" id="result" hidden>
+    <div class="res-hero">
+      <div class="res-bg" id="resBg"></div>
+      <div class="wrap res-nav">
+        <button class="btn-back" id="backBtn">Back</button>
+        <div class="micro bone" id="resArena"></div>
+      </div>
+      <div class="wrap res-head">
+        <div class="res-head-in">
+          <div class="plate" id="plate"></div>
+          <div class="res-title">
+            <div class="eyebrow"><i class="tick"></i><span id="rankNo">Rank 01 of 06</span></div>
+            <div class="animal" id="animal"></div>
+            <div class="binomial" id="binomial"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="verdict">
+      <div class="wrap verdict-in">
+        <div>
+          <div class="micro op7">You rank</div>
+          <div class="big-pct" id="counter">TOP 100%</div>
+          <div class="verdict-line" id="verdictLine"></div>
+          <div class="micro op6" id="poolCaption"></div>
+        </div>
+        <div class="verdict-right">
+          <div class="res-sub" id="resTitle"></div>
+          <div class="tagline" id="tagline"></div>
+          <div class="micro" id="ladder"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wrap res-body">
+      <div class="res-col">
+        <div class="lbl">The numbers</div>
+        <div id="breakdown" class="breakdown"></div>
+
+        <div class="next">
+          <div class="lbl">Next rank</div>
+          <div class="next-animal" id="nextAnimal"></div>
+          <div class="tagline" id="nextLine"></div>
+        </div>
+
+        <div class="share">
+          <h2 class="h2">Post the poster</h2>
+          <div class="tagline">Somebody in your gym is a Sloth. Help them find out.</div>
+          <div class="share-btns">
+            <button class="btn-primary sm" id="dlBtn">Download card</button>
+            <button class="btn-ghost sm" id="shareBtn">Copy link</button>
+          </div>
+        </div>
+
+        <div class="footer-mark">
+          <svg viewBox="0 0 100 100" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M10 10H90V90H10ZM8.5 76.4Q27.9 61.6 44 42Q22.4 53.7 -0.5 63.6Q0 72.8 8.5 76.4ZM26.8 93.3Q50.1 61.7 68 26Q41.7 55.2 13.2 82.7Q16.7 92.2 26.8 93.3ZM54.1 106.3Q79.5 57 98 4Q69.4 51.6 37.9 97.7Q43.3 107 54.1 106.3Z"></path></svg>
+          <span>BEASTINDEX.COM</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<canvas id="cardCanvas" width="1080" height="1350" hidden></canvas>
+<script src="app.js"></script>
+</body>
+</html>

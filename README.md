@@ -203,11 +203,14 @@ The design already ships this pattern: v4/BEAST INDEX has a scope selector for
 country / region / continent / world. Add a second axis — *who* you are measured against —
 and the biggest correctness risk in the project turns into its most shareable feature.
 
-| Pool | Backed by | What it means |
+| Pool | Backed by | Live today |
 |---|---|---|
-| **Everyone** *(default)* | NHANES, measured, nationally representative | All adults, trained or not |
-| **People who train** | OPL lower quartile as proxy | Regular gym-goers |
-| **Competitors** | OpenPowerlifting / NYC Marathon finishers | People who enter meets and races |
+| **Everyone** | NHANES / KSPO, measured, general population | FIT only |
+| **Competitors** | OpenPowerlifting / NYC Marathon finishers | STRONG, FAST |
+
+Shipped state: the control is built and every option carries a plain-language reason when it is
+greyed out (`POOL_GAP` in `web/app.js`). No arena offers both pools yet — that is the honest
+position, and closing it is decision 2 below.
 
 Why this and not the alternatives:
 
@@ -225,11 +228,17 @@ are bottom-1% is how you lose them in five seconds. "Competitors" is the opt-in 
 
 ### 6.1 How each arena bridges the two anchors
 
-**FAST — clean end to end.** NHANES VO2max converts to predicted race times through the
-Daniels/Gilbert VDOT relationship, which is peer-reviewed and standard in coaching. NYC Marathon
-gives the competitive tail as measured finish times. The two overlap in the middle, so they can
-be fitted into one continuous distribution and cross-checked against each other. No invented
-numbers anywhere in this path.
+**FAST — the competitive tail is clean; the general-population end is NOT.** NYC Marathon gives
+measured finish times and works today. The VDOT bridge I expected to carry the "everyone" pool
+was **built, tested and rejected**: converting a race time to VDOT and placing it on the NHANES
+VO2max distribution compares two incompatible scales. NHANES VO2max is *predicted from a
+submaximal* treadmill test (biased high); VDOT from a slow marathon is biased low, because
+marathon pace is limited by fuelling and durability, not the aerobic ceiling alone. The output
+inverted — a 5:00 marathoner scored 17% against competitors but 2% against "everyone", which is
+plainly wrong. The code is kept behind `VO2_BRIDGE = false` in `web/app.js` with the reasoning
+inline. FAST needs the same participation-weighted mixture as STRONG: finishing a marathon
+already places you in roughly the top 1% of adults, and no scale conversion substitutes for
+modelling that.
 
 **STRONG — one modelling assumption, and it needs to be documented.** OPL gives the competitive
 tail directly and it is excellent. The problem is the general-population end: NHANES measures
@@ -244,12 +253,16 @@ data to sanity-check the resulting spread rather than to generate it. This is th
 in the project with a real assumption in it, and it belongs on the methodology page in plain
 language, not buried.
 
-**FIT — still unsolved.** NHANES does not measure push-ups, pull-ups or sit-ups, and no credible
-public microdata set for them turned up. The real options are US Army ACFT/APFT percentile
-tables (official and published, but aggregate tables rather than row-level data), or launching
-FIT labelled as "published norms, beta" while STRONG and FAST carry the data-backed claim.
-My suggestion: **launch with STRONG and FAST**, and hold FIT until it can meet the same bar.
-Two arenas that are true beat three where one is decoration.
+**FIT — partly solved.** The Korea Sports Promotion Foundation's national fitness testing
+programme publishes row-level results for 13,393 adults aged 21-64: grip force, sit-ups, broad
+jump, body fat. It is general-population government testing, not athletes, so **sit-ups now
+have a real "everyone" curve**. Push-ups and pull-ups still have none — NHANES does not measure
+them and no credible public microdata set turned up. Remaining options for those two are US Army
+ACFT/APFT percentile tables (official and published, but aggregate rather than row-level).
+
+An unplanned bonus: the Korean grip mean (43.4 kg single hand, so ~86.8 combined) lands on top
+of the NHANES combined grip mean of 86.9 kg. Two governments, two continents, a decade apart,
+same number. That is a strong independent check that both datasets are sound.
 
 ## 7. Open decisions — need your call
 
@@ -261,7 +274,30 @@ Two arenas that are true beat three where one is decoration.
 5. **21 missing animal illustrations** — placeholder frames until drawn.
 6. **Tier thresholds** `[0,20,40,62,80,93]` were chosen by feel. Re-derive from data, or keep?
 
-## 8. Environment
+## 8. The website
+
+`web/` is a **static site with no backend**. `data/build_reference.py` precomputes empirical
+percentile curves into `web/data/reference.json` — 21 KB — so scoring runs entirely in the
+browser. No API, no CORS, no server cost, deploys to Vercel / Netlify / GitHub Pages as-is.
+This replaces the FastAPI service in the plan's Tahap 3; the plan assumed live model inference,
+but a lookup table is smaller, faster and cannot go down.
+
+```
+web/index.html      markup, converted from Beast/BEAST INDEX.dc.html
+web/styles.css      the design system as plain CSS (palette, type, motion all preserved)
+web/app.js          scoring engine, arena/pool state, result screen, share-card canvas
+web/data/*.json     reference curves (21 KB) + country list (15 KB)
+serve.py            local dev server -> http://127.0.0.1:4321
+```
+
+Verified working: arena flip-board, panel switching, DOTS normalisation, Epley reps-to-1RM
+(180 kg x 3 -> 198 kg), per-metric percentile bars, animal tiering, country subspecies naming
+("Capra obstinata, subsp. indonesensis"), percentile count-up, share-card PNG export.
+
+Still to do: 21 of 24 animal plates are unillustrated (placeholder frames render in their
+place), and the share card is a plain canvas layout rather than the Brand Kit's 1080x1350 spec.
+
+## 9. Environment
 
 System Python 3.9.6 has `pandas 2.3.3` and `numpy 2.0.2`.
 **Missing: `scikit-learn`, `joblib`, `fastapi`, `uvicorn`.** A venv is needed before Tahap 2:
