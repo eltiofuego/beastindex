@@ -284,9 +284,54 @@ published ACSM tables under the same caveat as 6.3.1.
 5. **21 missing animal illustrations** — placeholder frames until drawn.
 6. **Tier thresholds** `[0,20,40,62,80,93]` were chosen by feel. Re-derive from data, or keep?
 
-## 8. The website
+## 8. The website — Next.js
 
-`web/` is a **static site with no backend**. `data/build_reference.py` precomputes empirical
+Ported to **Next.js 16 (App Router) + TypeScript + Tailwind 4**, one project, deployable to
+Vercel as-is. This is the stack the revision doc asks for in §9/§11.
+
+```
+app/layout.tsx  app/page.tsx     shell; reference curves are read server-side and
+                                 passed as props, so no client round trip for data
+app/globals.css                  Brand Kit tokens exposed to Tailwind v4 via @theme,
+                                 plus the bespoke component CSS (the design is too
+                                 specific for utilities alone)
+app/api/score/route.ts           POST /api/score — validates input, returns the full
+                                 result object. GET returns a usage example.
+lib/scoring.ts                   the engine: DOTS, Riegel, percentiles, cohorts,
+                                 regions, ranks, cutoffs. Shared by route and client.
+lib/arenas.ts  lib/types.ts      arena/pool/cutoff definitions, typed contracts
+components/Beast.tsx             the UI as React
+public/data/*.json               reference curves (180 KB) + country list
+```
+
+Build is clean (`npm run build`), typecheck clean, `/` prerendered static and
+`/api/score` server-rendered on demand.
+
+**Dev-mode note:** in a sandboxed browser the Next HMR websocket can be blocked (403),
+which prevents hydration and makes every control look dead. `npm run build && npm start`
+is unaffected. Not a code fault — worth knowing before debugging a phantom.
+
+The previous vanilla build is kept in `web/` as a reference implementation.
+
+### 8.1 Marathon cutoff awareness
+
+A slow marathon is not merely a low percentile — at most majors the course closes and no
+official time is recorded. The site now says so, using published cutoffs:
+
+| Race | Cutoff |
+|---|---|
+| Boston | 6:00 · Berlin 6:15 · Chicago 6:30 · Tokyo 7:00 · London 8:00 |
+
+NYC is the exception with no strict cutoff, which is why its own field contains finishes
+out to **12:45:25** — 347 runners finished slower than 8 hours. So the honest message is
+not "you did not finish", it is: *this ranks here because New York recorded people this
+slow; most other majors would have closed the course.* Past every major the notice
+escalates from info to warning. It fires only on an entered marathon, never on a
+Riegel-converted shorter distance.
+
+### 8.2 Legacy static build
+
+`web/` was a **static site with no backend**. `data/build_reference.py` precomputes empirical
 percentile curves into `web/data/reference.json` — 21 KB — so scoring runs entirely in the
 browser. No API, no CORS, no server cost, deploys to Vercel / Netlify / GitHub Pages as-is.
 This replaces the FastAPI service in the plan's Tahap 3; the plan assumed live model inference,

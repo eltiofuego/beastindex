@@ -13,3 +13,10 @@ __pycache__/
 # Unrelated design system for the ORIGO LVCA music project — see README section 4.2
 Beast/_ds/
 Beast/.thumbnail
+
+# Next.js
+/.next/
+/out/
+/node_modules/
+next-env.d.ts
+.vercel

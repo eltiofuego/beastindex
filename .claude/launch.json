@@ -1,7 +1,0 @@
-{
-  "version": "0.0.1",
-  "configurations": [
-    { "name": "beastindex", "runtimeExecutable": "python3",
-      "runtimeArgs": ["/Users/avalon/Desktop/Beast/serve.py"], "port": 4321 }
-  ]
-}
