@@ -229,3 +229,28 @@ input:focus{border-color:var(--a);background:var(--steel)}
 .footer-mark{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:44px;color:#4E525A}
 .footer-mark svg{width:16px;height:16px;flex:none}
 .footer-mark span{font-family:'Archivo Expanded';font-weight:800;font-size:12px;letter-spacing:.06em}
+
+/* ── narrative output (revision POIN 3) ── */
+.breakdown .expl{font-weight:400;font-size:13.5px;line-height:1.6;color:#B6BBC3;margin-top:9px;text-wrap:pretty}
+.breakdown .expl.coh{color:var(--bone);border-left:3px solid var(--a);padding-left:11px}
+.breakdown .expl.reg{color:#B6BBC3;border-left:3px solid var(--line);padding-left:11px}
+.breakdown .expl.src{font-size:11px;letter-spacing:.06em;color:#5F646C;text-transform:uppercase;margin-top:8px}
+.why-block{margin-top:34px;border-top:1px solid var(--line);padding-top:22px}
+.why p{font-weight:400;font-size:14.5px;line-height:1.65;color:#B6BBC3;margin:0 0 10px;max-width:62ch;text-wrap:pretty}
+.ladder{display:grid;gap:2px;margin-top:18px;border:1px solid var(--line)}
+.rung{display:flex;align-items:baseline;gap:12px;padding:10px 13px;background:var(--coal)}
+.rung.on{background:var(--steel);border-left:4px solid var(--a);padding-left:9px}
+.rung .rn{font-weight:700;font-size:10px;letter-spacing:.14em;color:#5F646C}
+.rung .ra{font-family:'Saira Condensed';font-weight:700;font-size:19px;letter-spacing:.03em;
+  text-transform:uppercase;color:var(--dim)}
+.rung.on .ra{color:var(--bone)}
+.rung .rr{margin-left:auto;font-weight:600;font-size:11px;letter-spacing:.1em;color:#5F646C}
+.rung .ryou{font-weight:700;font-size:10px;letter-spacing:.14em;color:var(--a);text-transform:uppercase}
+.region-block{margin-top:26px}
+.regions{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.region{appearance:none;cursor:pointer;text-align:left;background:var(--coal);border:1px solid var(--line);
+  color:var(--bone);padding:12px 12px;transition:all 200ms}
+.region.on{border-color:var(--a);background:var(--steel)}
+.region .rgn{font-family:'Saira Condensed';font-weight:700;font-size:17px;letter-spacing:.03em;text-transform:uppercase}
+.region.on .rgn{color:var(--a)}
+.region .rgc{display:block;font-weight:600;font-size:10px;letter-spacing:.1em;color:#5F646C;margin-top:5px;text-transform:uppercase}

@@ -27,6 +27,21 @@ OUT.mkdir(parents=True, exist_ok=True)
 
 PCTS = [1,2,3,5,7.5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,92.5,95,97,98,99]
 AGE_BANDS = [(18,24),(25,29),(30,34),(35,39),(40,44),(45,49),(50,59),(60,85)]
+BW_BANDS  = [(40,60),(60,70),(70,80),(80,90),(90,100),(100,110),(110,200)]
+
+# Country -> region. Only regions with enough rows to hold a stable curve are kept;
+# `region_cells` drops any cell under the minimum n rather than showing a thin one.
+REGIONS = {
+ 'Southeast Asia':['Indonesia','Malaysia','Singapore','Philippines','Thailand','Vietnam'],
+ 'East Asia':['Japan','China','Taiwan','South Korea','Hong Kong'],
+ 'North America':['USA','Canada','Mexico'],
+ 'Western Europe':['Germany','France','England','Finland','Poland','Sweden','Norway',
+                   'Netherlands','Spain','Italy','Ireland','Scotland','Wales','Denmark',
+                   'Belgium','Austria','Czechia'],
+ 'Eastern Europe':['Russia','Ukraine','Belarus','Kazakhstan','Latvia','Lithuania','Estonia'],
+ 'Oceania':['Australia','New Zealand'],
+}
+COUNTRY_REGION = {c:r for r,cs in REGIONS.items() for c in cs}
 
 # DOTS — Kopayev et al. 2020. Removes bodyweight and sex bias from a lift.
 DOTS_M = (-307.75076, 24.0900756, -0.1918759221, 0.0007391293, -0.000001093)
@@ -104,6 +119,50 @@ def debut_lifters():
     return d.groupby('Name', sort=False).head(1).rename(columns={'Sex':'sex','Age':'age'})
 
 
+def cohort_cells(df, valcol, with_bw=True, min_n=120):
+    """Percentiles in RAW units inside a like-for-like cohort: same sex, same age
+    band, and (where the source records bodyweight) the same weight band. This is
+    what lets the site say 'compared against 6,216 men aged 25-29 at 60-70 kg'
+    instead of an unexplained number. Revision doc POIN 2 step 2 / POIN 3."""
+    out = {}
+    for sex in ('M','F'):
+        d0 = df[df.sex == sex]
+        cells = {}
+        for lo,hi in AGE_BANDS:
+            d1 = d0[d0.age.between(lo,hi)]
+            key = f"{lo}-{hi}"
+            if with_bw and 'bw' in d1.columns:
+                sub = {}
+                for blo,bhi in BW_BANDS:
+                    c = curve(d1[d1.bw.between(blo,bhi)][valcol], min_n)
+                    if c: sub[f"{blo}-{bhi}"] = c
+                if sub: cells[key] = sub
+            else:
+                c = curve(d1[valcol], min_n)
+                if c: cells[key] = {"any": c}
+        if cells: out[sex] = cells
+    return out
+
+
+def region_cells(df, valcol, min_n=250):
+    """Same-region comparison. DOTS-normalised for strength so weight classes do not
+    distort a region's curve. Regions with too few rows are omitted, not padded."""
+    d = df.copy()
+    d['region'] = d.get('Country', pd.Series(index=d.index, dtype=object)).map(COUNTRY_REGION)
+    d = d[d.region.notna()]
+    out = {}
+    for sex in ('M','F'):
+        d0 = d[d.sex == sex]; cells = {}
+        for lo,hi in AGE_BANDS:
+            d1 = d0[d0.age.between(lo,hi)]; sub = {}
+            for r in REGIONS:
+                c = curve(d1[d1.region == r][valcol], min_n)
+                if c: sub[r] = c
+            if sub: cells[f"{lo}-{hi}"] = sub
+        if cells: out[sex] = cells
+    return out
+
+
 def build_strong():
     print("STRONG — OpenPowerlifting")
     df = pd.read_csv(RAW.parent / "processed" / "strength_data.csv", low_memory=False)
@@ -120,8 +179,15 @@ def build_strong():
             d = d.assign(norm=d[col].values * kk)
             pools[pool] = by_age(d, 'norm')
             counts[pool] = len(d)
-        metrics[name] = {"pools": pools}
-        print(f"   {name:<9} competitors={counts['competitors']:>9,}  first-timers={counts['firsttimers']:>8,}")
+        base = df[df[col].notna() & (df[col] > 0)].rename(columns={'BodyweightKg':'bw'})
+        kb = np.where(base.sex.values=='M', dots_coeff(base.bw.values,'M'),
+                                            dots_coeff(base.bw.values,'F'))
+        metrics[name] = {"pools": pools,
+                         "cohorts": cohort_cells(base, col, with_bw=True),
+                         "regions": region_cells(base.assign(norm=base[col].values*kb), 'norm')}
+        nreg = sum(len(v) for s in metrics[name]['regions'].values() for v in s.values())
+        print(f"   {name:<9} competitors={counts['competitors']:>9,}  "
+              f"first-timers={counts['firsttimers']:>8,}  region cells={nreg}")
     return {"metrics": metrics, "normalisation": "dots",
             "basePool": "competitors", "pools": ["firsttimers", "competitors"],
             "source": {"competitors": "OpenPowerlifting, Raw — every logged competition lift",
@@ -131,7 +197,7 @@ def build_strong():
 def build_fast():
     print("FAST — NYC Marathon 2025 + NHANES VO2max")
     df = pd.read_csv(RAW / "running" / "nyc_marathon_2025.csv", low_memory=False)
-    fin = df.drop_duplicates('RunnerID')[['OverallTime','Gender','Age']].copy()
+    fin = df.drop_duplicates('RunnerID')[['OverallTime','Gender','Age','Country']].copy()
     def sec(t):
         try:
             p=[int(x) for x in str(t).split(':')]
@@ -142,6 +208,16 @@ def build_fast():
     fin['age'] = pd.to_numeric(fin.Age, errors='coerce')
     fin = fin[fin.val.notna() & fin.sex.notna() & fin.age.between(18,85)]
     marathon = by_age(fin,'val')
+    fin_cohort = cohort_cells(fin, 'val', with_bw=False)
+    ISO3 = {'USA':'USA','CAN':'Canada','MEX':'Mexico','GBR':'England','FRA':'France',
+            'GER':'Germany','ITA':'Italy','ESP':'Spain','NED':'Netherlands','SWE':'Sweden',
+            'NOR':'Norway','DEN':'Denmark','IRL':'Ireland','AUT':'Austria','BEL':'Belgium',
+            'POL':'Poland','FIN':'Finland','AUS':'Australia','NZL':'New Zealand',
+            'JPN':'Japan','CHN':'China','KOR':'South Korea','TPE':'Taiwan','HKG':'Hong Kong',
+            'INA':'Indonesia','MAS':'Malaysia','SGP':'Singapore','PHI':'Philippines',
+            'THA':'Thailand','VIE':'Vietnam','RUS':'Russia','UKR':'Ukraine'}
+    fin_r = fin.assign(Country=fin.Country.map(ISO3))
+    fin_regions = region_cells(fin_r, 'val')
     print(f"   marathon competitors n={len(fin):,}")
 
     # NHANES VO2max -> general population. Stored as VO2max; the site converts a
@@ -156,7 +232,8 @@ def build_fast():
     vo = vo[vo.CVDVOMAX.notna() & vo.age.between(18,85)]
     print(f"   vo2max everyone   n={len(vo):,}")
     return {"metrics": {
-              "marathon": {"pools": {"trained": marathon}},
+              "marathon": {"pools": {"trained": marathon},
+                           "cohorts": fin_cohort, "regions": fin_regions},
               "vo2max":   {"pools": {"everyone": by_age(vo,'CVDVOMAX')}}},
             "normalisation": "none", "basePool": "trained", "pools": ["trained"],
             "source": {"trained":"NYC Marathon 2025 finishers (NYRR public results)",
@@ -171,10 +248,14 @@ def build_fit():
                             'broad jump_cm':'jump','gender':'sex'})
     df = df[df.age.between(18,85)]
     metrics={}
+    df = df.rename(columns={'weight_kg':'bw'})
     for name,col in [('situps','situps'),('jump','jump')]:
         d=df[df[col].notna() & (df[col]>0)]
-        metrics[name]={"pools":{"everyone": by_age(d,col)}}
-        print(f"   {name:<7} everyone n={len(d):,}")
+        metrics[name]={"pools":{"everyone": by_age(d,col)},
+                       "cohorts": cohort_cells(d, col, with_bw=True),
+                       "regions": {}}
+        ncoh=sum(len(v) for s in metrics[name]['cohorts'].values() for v in s.values())
+        print(f"   {name:<7} everyone n={len(d):,}  cohort cells={ncoh}")
     return {"metrics": metrics, "normalisation":"none", "basePool":"everyone",
             "pools": ["everyone"],
             "source":{"everyone":"Korea Sports Promotion Foundation national fitness testing "

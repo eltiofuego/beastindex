@@ -90,9 +90,15 @@
       <p class="note" id="poolNote">Each pool is a different measured population.</p>
       <div class="pools" id="pools"></div>
 
+      <div class="region-block" id="regionBlock" hidden>
+        <div class="lbl">Compare within a region</div>
+        <p class="note" id="regionNote"></p>
+        <div class="regions" id="regions"></div>
+      </div>
+
       <div class="country-block">
         <div class="lbl">Where are you?</div>
-        <p class="note">Used on your card. It does not change your score.</p>
+        <p class="note">Used on your card and for the region below.</p>
         <div class="combo">
           <input id="country" type="text" placeholder="Start typing a country" autocomplete="off">
           <div class="dropdown" id="countryList" hidden></div>
@@ -166,6 +172,12 @@
       <div class="res-col">
         <div class="lbl">The numbers</div>
         <div id="breakdown" class="breakdown"></div>
+
+        <div class="why-block">
+          <div class="lbl">Why this animal</div>
+          <div id="why" class="why"></div>
+          <div id="ladder2" class="ladder"></div>
+        </div>
 
         <div class="next">
           <div class="lbl">Next rank</div>

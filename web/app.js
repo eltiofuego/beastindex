@@ -191,6 +191,55 @@ const RACE_M = { marathon: 42195 };
    FAST needs the same participation-weighted mixture as STRONG. See README section 6.1. */
 const VO2_BRIDGE = false;
 
+/* ── cohort lookup (revision POIN 2 step 2 / POIN 3) ──────────────────────────
+   Finds the like-for-like comparison group for this user — same sex, same age
+   band, same bodyweight band where the source records weight — and reports how
+   many real people are in it. Percentiles here are in RAW units (kg, seconds,
+   reps) so the number shown to the user is directly checkable. */
+function bwBandOf(bw){
+  const B=[[40,60],[60,70],[70,80],[80,90],[90,100],[100,110],[110,200]];
+  for(const [lo,hi] of B) if(bw>=lo && bw<hi) return `${lo}-${hi}`;
+  return bw>=110 ? '110-200' : '40-60';
+}
+function cohortFor(refKey, x){
+  const m = S.ref?.arenas?.[S.arena]?.metrics?.[refKey];
+  const byAge = m?.cohorts?.[S.sex]; if(!byAge) return null;
+  const age = parseFloat(S.age), band = ageBand(isNaN(age)?30:age);
+  const cell = byAge[band] || byAge[Object.keys(byAge)[0]]; if(!cell) return null;
+  const bw = parseFloat(S.bw);
+  let key = 'any', curve = cell.any;
+  if(!curve){
+    key = bwBandOf(isNaN(bw)?75:bw);
+    curve = cell[key];
+    if(!curve){                                   // nearest populated weight band
+      const keys=Object.keys(cell);
+      if(!keys.length) return null;
+      const target=parseInt(key,10);
+      key = keys.reduce((a,b)=>Math.abs(parseInt(b,10)-target)<Math.abs(parseInt(a,10)-target)?b:a);
+      curve = cell[key];
+    }
+  }
+  let pct = pctOf(curve, x);
+  const who = `${S.sex==='M'?'men':'women'} aged ${band}` +
+              (key==='any' ? '' : `, ${key.replace('-','–')} kg`);
+  return {n:curve.n, pct, band, bwBand:key, who};
+}
+function regionFor(refKey, v){
+  const m = S.ref?.arenas?.[S.arena]?.metrics?.[refKey];
+  const byAge = m?.regions?.[S.sex]; if(!byAge || !S.region) return null;
+  const age = parseFloat(S.age);
+  const cell = byAge[ageBand(isNaN(age)?30:age)]; if(!cell) return null;
+  const curve = cell[S.region]; if(!curve) return null;
+  return {n:curve.n, pct:pctOf(curve, v)};
+}
+function regionsAvailable(){
+  const m = S.ref?.arenas?.[S.arena]?.metrics?.[ARENAS[S.arena].metrics[0].ref];
+  const byAge = m?.regions?.[S.sex]; if(!byAge) return [];
+  const age = parseFloat(S.age);
+  const cell = byAge[ageBand(isNaN(age)?30:age)] || {};
+  return Object.keys(cell);
+}
+
 /* ─────────────── scoring ─────────────── */
 function metricValue(m){
   const raw = S.vals[m.k];
@@ -212,7 +261,11 @@ function scoreArena(pool){
     const v = (S.arena==='strong') ? x*dotsCoeff(bw, S.sex) : x;
     let pct = pctOf(curve, v);
     if(m.time) pct = 100 - pct;             // lower time is better
-    rows.push({m, x, pct:Math.min(99.4,Math.max(0.6,pct)), n:curve.n});
+    const coh = cohortFor(m.ref, x);
+    const reg = regionFor(m.ref, v);
+    if(coh && m.time) coh.pct = 100 - coh.pct;
+    if(reg && m.time) reg.pct = 100 - reg.pct;
+    rows.push({m, x, pct:Math.min(99.4,Math.max(0.6,pct)), n:curve.n, cohort:coh, region:reg});
   }
   if(!rows.length) return null;
   return {rows, overall: rows.reduce((a,r)=>a+r.pct,0)/rows.length,
@@ -234,6 +287,69 @@ function result(){
     title: cname ? `${possessive(cname)} ${rank[0]}` : `The ${rank[0]}`,
     otherPool: other, otherAnimal: o ? arena.ranks[tierOf(o.overall)][0] : null,
     next: tier<5 ? arena.ranks[tier+1] : null};
+}
+
+/* ── narrative layer (revision POIN 3) ────────────────────────────────────────
+   The revision is explicit that a chart alone is not an answer. Every number the
+   site shows must say which dataset it came from, how many real people it was
+   measured against, and what it means in words. */
+function bandWord(p){
+  if(p>=93) return 'exceptional';
+  if(p>=80) return 'well above average';
+  if(p>=62) return 'above average';
+  if(p>=40) return 'about average';
+  if(p>=20) return 'below average';
+  return 'well below average';
+}
+function metricSentence(row, pool){
+  const p = Math.round(row.pct), who = POOLS[pool].who;
+  const val = row.m.time ? fmtTime(row.x)
+            : row.m.load ? Math.round(row.x)+' kg (estimated 1RM)'
+            : Math.round(row.x)+(row.m.ref==='jump'?' cm':' reps');
+  const beat = row.m.time ? 'faster than' : 'above';
+  const adj = S.arena==='strong' ? ', adjusted for bodyweight with DOTS' : '';
+  return `${val} is ${bandWord(p)} — ${beat} ${p}% of ${who} in your sex and age band${adj}.`;
+}
+function cohortSentence(row){
+  if(!row.cohort) return null;
+  const c = Math.round(row.cohort.pct), head = Math.round(row.pct);
+  let s = `Compared against ${row.cohort.n.toLocaleString()} real ${row.cohort.who}: ` +
+          `${c}${ordinalSuffix(c)} percentile on raw ${row.m.time?'time':'numbers'}, ` +
+          `no bodyweight adjustment.`;
+  // Explain the gap rather than leaving two different numbers side by side.
+  if(S.arena==='strong' && Math.abs(c-head) >= 8){
+    s += c < head
+      ? ` Lower than the ${head}% above because everyone here is your size — DOTS credits you for being lighter, raw kilos do not.`
+      : ` Higher than the ${head}% above because you are heavy for this band, which DOTS discounts.`;
+  }
+  return s;
+}
+function ordinalSuffix(n){ const r=n%100; if(r>=11&&r<=13) return 'th';
+  return ({1:'st',2:'nd',3:'rd'}[n%10]||'th'); }
+
+function sourceOf(pool){
+  return S.ref?.arenas?.[S.arena]?.source?.[pool]
+      || S.ref?.arenas?.[S.arena]?.source?.[S.ref.arenas[S.arena].basePool] || '';
+}
+
+/* Why this animal, and not the one above or below it. The revision asks for the
+   reason, i.e. which input is carrying the result and which is holding it back. */
+function whyThisAnimal(r){
+  const sorted=[...r.rows].sort((a,b)=>b.pct-a.pct);
+  const best=sorted[0], worst=sorted[sorted.length-1];
+  const parts=[];
+  parts.push(`You scored ${Math.round(r.overall)} overall, the average of your ` +
+             `${r.rows.length} ${r.rows.length===1?'entry':'entries'}. ` +
+             `That lands in band ${r.tier+1} of 6, which is ${r.animal}.`);
+  if(r.rows.length>1 && Math.round(best.pct)!==Math.round(worst.pct)){
+    parts.push(`${best.m.label} is carrying it at ${Math.round(best.pct)}%; ` +
+               `${worst.m.label} is holding it back at ${Math.round(worst.pct)}%. ` +
+               `Bring ${worst.m.label.toLowerCase()} up and the rank moves.`);
+  }
+  const [lo,hi]=[TIERS[r.tier], r.tier<5?TIERS[r.tier+1]:100];
+  if(r.next) parts.push(`${r.animal} runs from ${lo} to ${hi}. ` +
+    `You need ${Math.max(1,Math.ceil(hi-r.overall))} more points for ${r.next[0]}.`);
+  return parts;
 }
 
 /* ─────────────── rendering ─────────────── */
@@ -309,6 +425,40 @@ function renderPools(){
     ? 'Both pools are measured populations. Switching changes who you stand next to, not the maths.'
     : 'One measured population for this arena. More pools need data that is not public yet.';
 }
+/* Region selector. Unlike v4's invented scope factors (country .94 / region .96),
+   each region here is an actual measured curve; regions without enough rows for a
+   stable curve simply do not appear. */
+const REGION_OF = {
+  'Southeast Asia':['Indonesia','Malaysia','Singapore','Philippines','Thailand','Vietnam'],
+  'East Asia':['Japan','China','Taiwan','South Korea','Hong Kong'],
+  'North America':['United States','Canada','Mexico'],
+  'Western Europe':['Germany','France','United Kingdom','Finland','Poland','Sweden','Norway',
+                    'Netherlands','Spain','Italy','Ireland','Denmark','Belgium','Austria','Czechia'],
+  'Eastern Europe':['Russia','Ukraine','Belarus','Kazakhstan','Latvia','Lithuania','Estonia'],
+  'Oceania':['Australia','New Zealand']
+};
+function regionOfCountry(name){
+  for(const [r,cs] of Object.entries(REGION_OF)) if(cs.includes(name)) return r;
+  return null;
+}
+function renderRegions(){
+  const avail = regionsAvailable();
+  const block = $('regionBlock');
+  if(!avail.length){ block.hidden = true; S.region = null; return; }
+  block.hidden = false;
+  if(S.region && !avail.includes(S.region)) S.region = null;
+  const m = S.ref.arenas[S.arena].metrics[ARENAS[S.arena].metrics[0].ref];
+  const cell = m.regions[S.sex][ageBand(parseFloat(S.age)||30)] || {};
+  $('regionNote').textContent =
+    `Measured curves for ${avail.length} region${avail.length>1?'s':''} in your sex and age band. ` +
+    `Regions without enough data to be stable are not listed.`;
+  $('regions').innerHTML = avail.map(r=>`
+    <button class="region${r===S.region?' on':''}" data-region="${r}">
+      <span class="rgn">${r}</span>
+      <span class="rgc">n = ${cell[r].n.toLocaleString()}</span>
+    </button>`).join('');
+}
+
 function renderSources(){
   if(!S.ref) return;
   const rows=[];
@@ -376,14 +526,35 @@ function showResult(){
                                 : `Among ${POOLS[r.otherPool].who}, ${article(r.otherAnimal)} ${r.otherAnimal}`)
     : '';
 
+  const src = sourceOf(r.pool);
   $('breakdown').innerHTML = r.rows.map(row=>{
     const val = row.m.time ? fmtTime(row.x)
               : row.m.load ? Math.round(row.x)+' kg'
-              : Math.round(row.x)+' reps';
+              : Math.round(row.x)+(row.m.ref==='jump'?' cm':' reps');
+    const coh = cohortSentence(row);
+    const rp = row.region ? Math.round(row.region.pct) : 0;
+    const reg = row.region ? `<div class="expl reg">Within ${S.region}: ${rp}${ordinalSuffix(rp)} percentile among ${row.region.n.toLocaleString()} people, bodyweight-adjusted.</div>` : '';
     return `<div class="row"><div class="top">
         <span class="nm">${row.m.label}</span>
         <span class="vals"><span class="v">${val}</span><span class="p">${Math.round(row.pct)}%</span></span>
-      </div><div class="bar"><i data-w="${row.pct}"></i></div></div>`;
+      </div><div class="bar"><i data-w="${row.pct}"></i></div>
+      <div class="expl">${metricSentence(row, r.pool)}</div>
+      ${coh?`<div class="expl coh">${coh}</div>`:''}
+      ${reg}
+      <div class="expl src">Source: ${src}</div>
+    </div>`;
+  }).join('');
+
+  // why this animal + the full ladder with the user's position marked
+  $('why').innerHTML = whyThisAnimal(r).map(s=>`<p>${s}</p>`).join('');
+  $('ladder2').innerHTML = r.arena.ranks.map((rk,i)=>{
+    const lo=TIERS[i], hi=i<5?TIERS[i+1]:100;
+    return `<div class="rung${i===r.tier?' on':''}">
+      <span class="rn">${String(i+1).padStart(2,'0')}</span>
+      <span class="ra">${rk[0]}</span>
+      <span class="rr">${lo}–${hi}</span>
+      ${i===r.tier?`<span class="ryou">you · ${Math.round(r.overall)}</span>`:''}
+    </div>`;
   }).join('');
 
   if(r.next){
@@ -425,7 +596,7 @@ function go(next){
   S.prev=S.arena; S.arena=next; S.vals={};
   if(!arenaPools(S.arena).includes(S.pool)) S.pool = arenaPools(S.arena)[0];
   setAccent(); renderHeroBg(); renderFlip(); renderPanels();
-  renderFields(); renderPools(); validity();
+  renderFields(); renderPools(); renderRegions(); validity();
 }
 
 /* ─────────────── wiring ─────────────── */
@@ -435,6 +606,10 @@ function wire(){
     go(ORDER[(ORDER.indexOf(S.arena)+1)%ORDER.length]); });
   $('panels').addEventListener('click',e=>{
     const b=e.target.closest('[data-arena]'); if(b) go(b.dataset.arena); });
+  $('regions').addEventListener('click',e=>{
+    const b=e.target.closest('[data-region]'); if(!b) return;
+    S.region = (S.region===b.dataset.region) ? null : b.dataset.region;
+    renderRegions(); validity(); });
   $('pools').addEventListener('click',e=>{
     const b=e.target.closest('[data-pool]');
     if(b && !b.disabled){ S.pool=b.dataset.pool; renderPools(); validity(); } });
@@ -442,8 +617,8 @@ function wire(){
     const b=e.target.closest('[data-sex]'); if(!b) return;
     S.sex=b.dataset.sex;
     [...$('sexSeg').children].forEach(x=>x.classList.toggle('on',x===b));
-    renderPools(); validity(); });
-  $('age').addEventListener('input',e=>{ S.age=e.target.value; validity(); });
+    renderPools(); renderRegions(); validity(); });
+  $('age').addEventListener('input',e=>{ S.age=e.target.value; renderRegions(); validity(); });
   $('bw').addEventListener('input',e=>{ S.bw=e.target.value; validity(); });
   $('fields').addEventListener('input',e=>{
     const k=e.target.dataset.k; if(!k) return;
@@ -454,7 +629,10 @@ function wire(){
     const b=e.target.closest('[data-iso]'); if(!b) return;
     S.country = S.countries.find(c=>c.iso===b.dataset.iso);
     S.q = S.country.name; $('country').value = S.q;
-    $('countryList').hidden=true; });
+    $('countryList').hidden=true;
+    const r = regionOfCountry(S.country.name);
+    if(r && regionsAvailable().includes(r)) S.region = r;
+    renderRegions(); validity(); });
   document.addEventListener('click',e=>{
     if(!e.target.closest('.combo')) $('countryList').hidden=true; });
   $('rankMe').addEventListener('click',showResult);
@@ -515,7 +693,7 @@ async function boot(){
   ]);
   S.ref=ref; S.countries=countries;
   setAccent(); renderHeroBg(); renderFlip(); renderPanels();
-  renderFields(); renderPools(); renderSources(); validity(); wire();
+  renderFields(); renderPools(); renderRegions(); renderSources(); validity(); wire();
 
   if(!reduced()){                       // the design's opening arena cycle
     const seq=['strong','fast','fit'];

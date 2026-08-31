@@ -307,7 +307,79 @@ Verified working: arena flip-board, panel switching, DOTS normalisation, Epley r
 Still to do: 21 of 24 animal plates are unillustrated (placeholder frames render in their
 place), and the share card is a plain canvas layout rather than the Brand Kit's 1080x1350 spec.
 
-## 9. Environment
+## 9. Revision doc (revisi.docx) — status
+
+§13's four symptoms were written against a different build. Measured against this one:
+
+| §13 problem | State here |
+|---|---|
+| Training not using full dataset | Always used all 2,373,441 rows. No sampling, ever. |
+| Output is only a chart | There is no chart. Output is now narrative + bars. |
+| Strength range not explained | Every row carries a plain-English sentence. |
+| Region selector missing | **Was true.** Now restored on measured regional curves. |
+
+### POIN 1 — every input field traced to a dataset
+
+`python3 data/audit_fields.py` regenerates this from `reference.json`, so it cannot drift.
+
+| Field | Arena | n | Cohort cells | Region cells | Pools |
+|---|---|---|---|---|---|
+| Squat | STRONG | 560,262 | 111 | 85 | competitors, firsttimers |
+| Bench press | STRONG | 870,295 | 112 | 88 | competitors, firsttimers |
+| Deadlift | STRONG | 676,028 | 112 | 85 | competitors, firsttimers |
+| Marathon time | FAST | 30,608 | 16 | 29 | trained |
+| Sit-ups | FIT | 8,461 | 32 | — | everyone |
+| Standing broad jump | FIT | 8,464 | 32 | — | everyone |
+
+**6 of 6 live fields are dataset-backed. No field uses a placeholder formula.**
+Push-ups and pull-ups were removed rather than faked — no public row-level data exists
+for either (§6.4).
+
+### POIN 3 — detailed output, shipped
+
+Each metric row now carries: the raw value, its percentile, a plain sentence saying what
+that means, the **exact cohort** it was measured against, the regional figure where one
+exists, and the dataset name. Below that, a "Why this animal" block names which lift is
+carrying the result and which is holding it back, and how many points to the next rank,
+against the full six-rung ladder. Bars remain, as a complement rather than the answer.
+
+One subtlety the UI now explains rather than hides: the headline percentile is
+DOTS-adjusted (credit for being lighter) while the cohort percentile is raw kilos inside
+your own weight band. They differ, legitimately, and the copy says why.
+
+### Region selector — restored, on real curves
+
+v4 used invented scope factors (`country 0.94`, `region 0.96`). Those are gone. Regions are
+now measured curves, and a region with too little data simply does not appear.
+
+| Region | OPL rows |
+|---|---|
+| North America | 586,629 |
+| Western Europe | 292,691 |
+| Eastern Europe | 252,750 |
+| Oceania | 58,107 |
+| East Asia | 29,731 |
+| Southeast Asia | 9,587 |
+
+**Country-level is not viable for the home market**: Indonesia has 375 OPL rows and 201 NYC
+finishers. Region-level works (Southeast Asia, n=9,587); country-level would be noise.
+Picking a country auto-selects its region.
+
+### Still open
+
+- **POIN 2** (submissions database) needs a Supabase project, credentials, a consent UI and
+  a privacy policy. Not started — blocked on you.
+- **K-Means archetypes** stay blocked until POIN 2 collects real cross-arena vectors (§9.1).
+
+### 9.1 Why K-Means cannot be trained yet
+
+The plan wants clusters over a (strength, speed, endurance) vector. No dataset holds all
+three for the same person — an OpenPowerlifting lifter has no run time, a NYC finisher has
+no squat — so there are zero rows to fit on. POIN 2's submissions table is what creates
+those vectors. K-Means is therefore a Fase F feature, not a launch feature. Until then the
+six-rung ladder per arena does the job and is fully explained.
+
+## 10. Environment
 
 System Python 3.9.6 has `pandas 2.3.3` and `numpy 2.0.2`.
 **Missing: `scikit-learn`, `joblib`, `fastapi`, `uvicorn`.** A venv is needed before Tahap 2:
