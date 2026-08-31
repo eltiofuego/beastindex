@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root{ --a:#4C6B3C; --paper:#EDE4D2; --paper2:#E5DAC4; --ink:#1A1714; --rule:#C3B698; --soft:#6E6455; }
+  html,body{margin:0;padding:0;background:#EDE4D2;color:#1A1714;-webkit-font-smoothing:antialiased;}
+  body{font-family:'Instrument Sans',system-ui,sans-serif;}
+  *{box-sizing:border-box;}
+  a{color:var(--a);text-decoration:none;} a:hover{color:var(--ink);}
+  input,button{font-family:inherit;}
+  input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+  input[type=number]{-moz-appearance:textfield;}
+  @keyframes flapdown{from{transform:rotateX(0)}to{transform:rotateX(-90deg)}}
+  @keyframes flapup{from{transform:rotateX(90deg)}to{transform:rotateX(0)}}
+  @keyframes drawer{from{opacity:0;transform:translateY(30px) scaleY(.985)}to{opacity:1;transform:none}}
+  @keyframes fadeup{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion: reduce){*{animation-duration:.01ms !important;transition-duration:.01ms !important;}}
+</style>
+</helmet>
+
+<div style="--a:{{ accentVar }};min-height:100vh;background:var(--paper);position:relative;">
+
+  <div style="position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.11;mix-blend-mode:multiply;background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E&quot;);"></div>
+
+  <div style="position:relative;z-index:2;max-width:680px;margin:0 auto;padding:22px 22px 70px;">
+
+    <header style="display:flex;align-items:flex-start;justify-content:space-between;gap:18px;border-bottom:1.5px solid var(--ink);padding-bottom:14px;">
+      <div style="display:flex;align-items:center;gap:11px;">
+        <div style="width:26px;height:26px;background:var(--ink);display:grid;place-items:center;flex:none;">
+          <div style="width:9px;height:9px;border-radius:50%;background:var(--paper);"></div>
+        </div>
+        <div>
+          <div style="font-family:'Bricolage Grotesque';font-weight:800;font-size:19px;letter-spacing:-.02em;line-height:1;">HOWFITAMI.COM</div>
+          <div style="font-family:'Instrument Serif';font-style:italic;font-size:14px;color:var(--soft);margin-top:3px;">A field guide to human animals</div>
+        </div>
+      </div>
+      <div style="font-family:'Instrument Sans';font-weight:500;font-size:10px;letter-spacing:.16em;color:var(--soft);text-transform:uppercase;text-align:right;padding-top:3px;">Free<br>No signup</div>
+    </header>
+
+    <section style="position:relative;padding:34px 0 30px;">
+
+      <div style="position:absolute;right:-6px;top:26px;width:92px;height:92px;border:2px solid var(--a);border-radius:50%;display:grid;place-items:center;transform:rotate(-9deg);opacity:.9;transition:border-color 520ms cubic-bezier(.4,0,.2,1);">
+        <div style="width:78px;height:78px;border:1px solid var(--a);border-radius:50%;display:grid;place-items:center;text-align:center;transition:border-color 520ms cubic-bezier(.4,0,.2,1);">
+          <div>
+            <div style="font-family:'Bricolage Grotesque';font-weight:800;font-size:15px;letter-spacing:.02em;color:var(--a);line-height:1;transition:color 520ms cubic-bezier(.4,0,.2,1);">{{ arenaWord }}</div>
+            <div style="font-family:'Instrument Sans';font-weight:500;font-size:7px;letter-spacing:.2em;color:var(--a);text-transform:uppercase;margin-top:4px;transition:color 520ms cubic-bezier(.4,0,.2,1);">Arena · MMXXVI</div>
+          </div>
+        </div>
+      </div>
+
+      <h1 style="font-family:'Bricolage Grotesque';font-weight:800;font-size:clamp(44px,12vw,86px);line-height:.94;letter-spacing:-.035em;margin:0;text-transform:uppercase;display:flex;flex-wrap:wrap;align-items:center;gap:.12em .2em;max-width:78%;">
+        <span>How</span>
+        <span key="{{ flipKey }}" onClick="{{ flip }}" role="button" aria-label="Change arena" style="display:inline-flex;gap:.05em;cursor:pointer;perspective:600px;">
+          <sc-for list="{{ tiles }}" as="t" hint-placeholder-count="6">
+            <span style="position:relative;display:block;width:.6em;height:1em;background:var(--a);color:var(--paper);overflow:hidden;transition:background 520ms cubic-bezier(.4,0,.2,1);">
+              <span style="position:absolute;left:0;right:0;top:0;height:50%;overflow:hidden;">
+                <span style="display:block;height:1em;line-height:1em;text-align:center;">{{ t.cur }}</span>
+              </span>
+              <span style="position:absolute;left:0;right:0;bottom:0;height:50%;overflow:hidden;">
+                <span style="display:block;height:1em;line-height:1em;text-align:center;margin-top:-.5em;">{{ t.prev }}</span>
+              </span>
+              <span style="position:absolute;left:0;right:0;top:0;height:50%;overflow:hidden;background:var(--a);transform-origin:50% 100%;backface-visibility:hidden;animation:flapdown 260ms cubic-bezier(.5,0,.9,.6) both;animation-delay:{{ t.d1 }};">
+                <span style="display:block;height:1em;line-height:1em;text-align:center;">{{ t.prev }}</span>
+              </span>
+              <span style="position:absolute;left:0;right:0;bottom:0;height:50%;overflow:hidden;background:var(--a);transform-origin:50% 0%;backface-visibility:hidden;animation:flapup 260ms cubic-bezier(.1,.4,.3,1) both;animation-delay:{{ t.d2 }};">
+                <span style="display:block;height:1em;line-height:1em;text-align:center;margin-top:-.5em;">{{ t.cur }}</span>
+              </span>
+              <span style="position:absolute;left:0;right:0;top:50%;height:1.5px;background:rgba(20,18,15,.32);z-index:5;"></span>
+            </span>
+          </sc-for>
+        </span>
+        <span>Am I?</span>
+      </h1>
+
+      <div style="display:flex;align-items:center;gap:12px;margin-top:20px;">
+        <button onClick="{{ flip }}" aria-label="Next arena" style="appearance:none;cursor:pointer;background:none;border:1.5px solid var(--ink);width:38px;height:38px;display:grid;place-items:center;flex:none;transition:background 220ms,color 220ms;color:var(--ink);" style-hover="background:var(--ink);color:var(--paper)">
+          <span style="font-family:'Instrument Sans';font-size:15px;line-height:1;">↻</span>
+        </button>
+        <div style="font-family:'Instrument Serif';font-style:italic;font-size:16px;color:var(--soft);">Flip the board. {{ arenaBlurb }}</div>
+      </div>
+    </section>
+
+    <section key="{{ arenaKey }}" style="border-top:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink);padding:26px 0 28px;animation:fadeup 420ms cubic-bezier(.4,0,.2,1) both;">
+
+      <div style="font-family:'Instrument Sans';font-weight:600;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--soft);margin-bottom:20px;">Field record · the specimen</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px 20px;">
+        <div>
+          <div style="font-family:'Instrument Sans';font-weight:600;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--soft);margin-bottom:9px;">Sex</div>
+          <div style="display:flex;gap:0;border:1.5px solid var(--ink);">
+            <sc-for list="{{ sexes }}" as="s" hint-placeholder-count="2">
+              <button onClick="{{ s.onSelect }}" style="flex:1;appearance:none;cursor:pointer;border:none;border-right:{{ s.divider }};padding:13px 0;min-height:46px;background:{{ s.bg }};color:{{ s.fg }};font-family:'Bricolage Grotesque';font-weight:700;font-size:16px;letter-spacing:-.01em;transition:background 200ms,color 200ms;">{{ s.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div>
+            <div style="font-family:'Instrument Sans';font-weight:600;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--soft);margin-bottom:9px;">Age</div>
+            <input type="number" inputMode="numeric" value="{{ age }}" onChange="{{ onAge }}" placeholder="30" style="width:100%;min-height:46px;background:none;border:none;border-bottom:1.5px solid var(--ink);color:var(--ink);font-family:'Bricolage Grotesque';font-weight:700;font-size:22px;padding:0 2px 4px;outline:none;transition:border-color 200ms;" style-focus="border-bottom-color:var(--a)">
+          </div>
+          <div>
+            <div style="font-family:'Instrument Sans';font-weight:600;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--soft);margin-bottom:9px;">Mass kg</div>
+            <input type="number" inputMode="decimal" value="{{ bw }}" onChange="{{ onBw }}" placeholder="75" style="width:100%;min-height:46px;background:none;border:none;border-bottom:1.5px solid var(--ink);color:var(--ink);font-family:'Bricolage Grotesque';font-weight:700;font-size:22px;padding:0 2px 4px;outline:none;transition:border-color 200ms;" style-focus="border-bottom-color:var(--a)">
+          </div>
+        </div>
+      </div>
+
+      <div style="height:1px;background:var(--rule);margin:26px 0 22px;"></div>
+
+      <div style="font-family:'Instrument Sans';font-weight:600;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--a);margin-bottom:18px;transition:color 520ms cubic-bezier(.4,0,.2,1);">{{ arenaName }}</div>
+
+      <div style="display:grid;gap:18px;">
+        <sc-for list="{{ fields }}" as="f" hint-placeholder-count="3">
+          <div style="animation:fadeup 420ms cubic-bezier(.4,0,.2,1) both;animation-delay:{{ f.delay }};">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:6px;">
+              <div style="font-family:'Bricolage Grotesque';font-weight:700;font-size:18px;letter-spacing:-.02em;">{{ f.label }}</div>
+              <div style="font-family:'Instrument Serif';font-style:italic;font-size:14px;color:var(--soft);">{{ f.hint }}</div>
+            </div>
+            <div style="display:grid;grid-template-columns:{{ f.cols }};gap:12px;">
+              <input type="{{ f.inputType }}" inputMode="{{ f.mode }}" value="{{ f.v1 }}" onChange="{{ f.on1 }}" placeholder="{{ f.p1 }}" style="width:100%;min-height:48px;background:none;border:none;border-bottom:1.5px solid var(--ink);color:var(--ink);font-family:'Bricolage Grotesque';font-weight:700;font-size:21px;padding:0 2px 5px;outline:none;transition:border-color 200ms;" style-focus="border-bottom-color:var(--a)">
+              <sc-if value="{{ f.hasReps }}" hint-placeholder-val="{{ false }}">
+                <input type="number" inputMode="numeric" value="{{ f.v2 }}" onChange="{{ f.on2 }}" placeholder="reps" style="width:100%;min-height:48px;background:none;border:none;border-bottom:1.5px solid var(--rule);color:var(--ink);font-family:'Bricolage Grotesque';font-weight:700;font-size:21px;padding:0 2px 5px;outline:none;transition:border-color 200ms;" style-focus="border-bottom-color:var(--a)">
+              </sc-if>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="height:1px;background:var(--rule);margin:28px 0 22px;"></div>
+
+      <div style="font-family:'Instrument Sans';font-weight:600;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--soft);margin-bottom:12px;">Where are you?</div>
+
+      <div style="position:relative;">
+        <input type="text" value="{{ q }}" onChange="{{ onQuery }}" onFocus="{{ onFocus }}" placeholder="Start typing a country" style="width:100%;min-height:52px;background:none;border:none;border-bottom:1.5px solid var(--ink);color:var(--ink);font-family:'Bricolage Grotesque';font-weight:700;font-size:21px;padding:0 2px 6px;outline:none;transition:border-color 200ms;" style-focus="border-bottom-color:var(--a)">
+        <sc-if value="{{ showList }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;left:0;right:0;top:100%;z-index:20;background:var(--paper2);border:1.5px solid var(--ink);border-top:none;max-height:274px;overflow-y:auto;">
+            <sc-for list="{{ matches }}" as="c" hint-placeholder-count="6">
+              <button onClick="{{ c.onSelect }}" style="width:100%;appearance:none;cursor:pointer;background:none;border:none;border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:12px;padding:12px 14px;min-height:48px;text-align:left;transition:background 160ms;" style-hover="background:var(--paper)">
+                <span style="font-size:19px;line-height:1;">{{ c.flag }}</span>
+                <span style="font-family:'Bricolage Grotesque';font-weight:700;font-size:16px;letter-spacing:-.01em;">{{ c.name }}</span>
+                <span style="margin-left:auto;font-family:'Instrument Serif';font-style:italic;font-size:13px;color:var(--soft);">{{ c.region }}</span>
+              </button>
+            </sc-for>
+            <sc-if value="{{ noMatches }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:16px 14px;font-family:'Instrument Serif';font-style:italic;font-size:15px;color:var(--soft);">No country by that name.</div>
+            </sc-if>
+          </div>
+        </sc-if>
+      </div>
+
+      <sc-if value="{{ hasCountry }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:28px;animation:fadeup 420ms cubic-bezier(.4,0,.2,1) both;">
+          <div style="font-family:'Instrument Sans';font-weight:600;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--soft);margin-bottom:16px;">Comparison scope</div>
+
+          <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+            <div style="position:relative;width:186px;height:186px;flex:none;">
+              <sc-for list="{{ ringsPainted }}" as="r" hint-placeholder-count="4">
+                <button onClick="{{ r.onSelect }}" aria-label="{{ r.label }}" style="position:absolute;left:50%;top:50%;width:{{ r.size }};height:{{ r.size }};margin-left:{{ r.off }};margin-top:{{ r.off }};z-index:{{ r.z }};border-radius:50%;border:{{ r.border }};background:{{ r.bg }};cursor:pointer;appearance:none;padding:0;transition:border-color 240ms,background 240ms;"></button>
+              </sc-for>
+            </div>
+
+            <div style="flex:1;min-width:200px;display:grid;gap:2px;">
+              <sc-for list="{{ rings }}" as="r" hint-placeholder-count="4">
+                <button onClick="{{ r.onSelect }}" style="appearance:none;cursor:pointer;text-align:left;display:flex;align-items:center;gap:11px;padding:9px 11px;min-height:44px;border:1px solid {{ r.rowBorder }};background:{{ r.rowBg }};transition:background 200ms,border-color 200ms;">
+                  <span style="width:9px;height:9px;border-radius:50%;border:1.5px solid {{ r.dot }};background:{{ r.dotFill }};flex:none;transition:all 200ms;"></span>
+                  <span style="font-family:'Bricolage Grotesque';font-weight:700;font-size:15px;letter-spacing:-.01em;color:var(--ink);">{{ r.label }}</span>
+                  <span style="margin-left:auto;font-family:'Instrument Serif';font-style:italic;font-size:13px;color:var(--soft);">{{ r.pool }}</span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <button onClick="{{ submit }}" style="margin-top:30px;width:100%;min-height:62px;appearance:none;cursor:pointer;border:none;background:var(--a);color:var(--paper);font-family:'Bricolage Grotesque';font-weight:800;font-size:26px;letter-spacing:-.02em;transition:background 520ms cubic-bezier(.4,0,.2,1),opacity 200ms;" style-hover="opacity:.88">Classify me</button>
+
+      <p style="font-family:'Instrument Serif';font-style:italic;font-size:15px;line-height:1.6;color:var(--soft);margin:14px 0 0;text-align:center;">{{ validity }}</p>
+    </section>
+
+    <p style="font-family:'Instrument Sans';font-weight:500;font-size:10px;letter-spacing:.14em;color:var(--soft);margin:20px 0 0;text-align:center;text-transform:uppercase;">Placeholder distributions · real data pending</p>
+  </div>
+
+  <sc-if value="{{ showResult }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:40;background:var(--paper);overflow-y:auto;-webkit-overflow-scrolling:touch;">
+      <div style="position:absolute;inset:0;pointer-events:none;opacity:.11;mix-blend-mode:multiply;background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E&quot;);"></div>
+
+      <div style="position:relative;max-width:680px;margin:0 auto;padding:22px 22px 80px;">
+
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1.5px solid var(--ink);padding-bottom:13px;">
+          <button onClick="{{ back }}" style="appearance:none;cursor:pointer;background:none;border:1.5px solid var(--ink);color:var(--ink);font-family:'Instrument Sans';font-weight:600;font-size:10px;letter-spacing:.16em;text-transform:uppercase;padding:10px 14px;min-height:40px;transition:background 200ms,color 200ms;" style-hover="background:var(--ink);color:var(--paper)">Amend record</button>
+          <div style="font-family:'Instrument Sans';font-weight:600;font-size:10px;letter-spacing:.2em;color:var(--soft);text-transform:uppercase;">Specimen record</div>
+        </div>
+
+        <div style="animation:drawer 620ms cubic-bezier(.2,.7,.2,1) both;">
+
+          <div style="position:relative;margin-top:26px;border:1.5px solid var(--ink);padding:22px 20px 26px;">
+
+            <div style="position:absolute;right:14px;top:14px;z-index:6;width:78px;height:78px;background:var(--paper);border:1.5px solid var(--a);border-radius:50%;display:grid;place-items:center;transform:rotate(-11deg);transition:border-color 520ms;">
+              <div style="text-align:center;">
+                <div style="font-family:'Instrument Sans';font-weight:600;font-size:7px;letter-spacing:.18em;text-transform:uppercase;color:var(--a);">Classified</div>
+                <div style="font-family:'Bricolage Grotesque';font-weight:800;font-size:16px;color:var(--a);line-height:1.05;margin-top:3px;">{{ stampDay }}</div>
+                <div style="font-family:'Instrument Sans';font-weight:600;font-size:7px;letter-spacing:.18em;text-transform:uppercase;color:var(--a);margin-top:2px;">{{ stampRest }}</div>
+              </div>
+            </div>
+
+            <div style="font-family:'Instrument Sans';font-weight:600;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--soft);">Plate {{ plateNo }} · {{ arenaName }}</div>
+
+            <div style="margin-top:16px;position:relative;aspect-ratio:4/3;border:1px solid var(--ink);background:var(--paper2);display:grid;place-items:center;overflow:hidden;">
+              <div style="position:absolute;inset:0;opacity:.14;background-image:repeating-linear-gradient(45deg, var(--a) 0 1px, transparent 1px 7px);"></div>
+              <div style="position:relative;text-align:center;padding:20px;">
+                <div style="font-family:'Instrument Sans';font-weight:600;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--soft);">Engraved plate</div>
+                <div style="font-family:'Instrument Serif';font-style:italic;font-size:19px;color:var(--soft);margin-top:8px;">Illustration to be supplied</div>
+              </div>
+              <div style="position:absolute;left:9px;top:9px;width:14px;height:14px;border-left:1px solid var(--ink);border-top:1px solid var(--ink);"></div>
+              <div style="position:absolute;right:9px;bottom:9px;width:14px;height:14px;border-right:1px solid var(--ink);border-bottom:1px solid var(--ink);"></div>
+            </div>
+
+            <div style="margin-top:22px;">
+              <div style="font-family:'Bricolage Grotesque';font-weight:800;font-size:clamp(46px,13vw,84px);line-height:.92;letter-spacing:-.04em;text-transform:uppercase;">{{ animal }}</div>
+              <div style="font-family:'Instrument Serif';font-style:italic;font-size:clamp(20px,5.5vw,28px);color:var(--soft);margin-top:6px;">{{ binomial }}</div>
+            </div>
+
+            <div style="height:1px;background:var(--rule);margin:22px 0;"></div>
+
+            <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap;">
+              <div>
+                <div style="font-family:'Instrument Sans';font-weight:600;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--soft);">Measured at</div>
+                <div style="font-family:'Bricolage Grotesque';font-weight:800;font-size:clamp(62px,18vw,110px);line-height:.9;letter-spacing:-.045em;color:var(--a);transition:color 520ms;">Top {{ counter }}%</div>
+              </div>
+            </div>
+
+            <div style="margin-top:18px;">
+              <div style="font-family:'Bricolage Grotesque';font-weight:700;font-size:clamp(21px,5.4vw,28px);letter-spacing:-.02em;">{{ title }}</div>
+              <div style="font-family:'Instrument Serif';font-style:italic;font-size:17px;line-height:1.5;color:var(--soft);margin-top:6px;text-wrap:pretty;">{{ tagline }}</div>
+              <div style="font-family:'Instrument Serif';font-style:italic;font-size:16px;color:var(--a);margin-top:10px;transition:color 520ms;">{{ ladder }}</div>
+            </div>
+          </div>
+
+          <div style="margin-top:30px;">
+            <div style="font-family:'Instrument Sans';font-weight:600;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--soft);margin-bottom:14px;">Field measurements</div>
+            <div style="display:grid;">
+              <sc-for list="{{ breakdown }}" as="b" hint-placeholder-count="3">
+                <div style="border-top:1px solid var(--rule);padding:13px 0 15px;">
+                  <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;">
+                    <div style="font-family:'Bricolage Grotesque';font-weight:700;font-size:17px;letter-spacing:-.02em;">{{ b.label }}</div>
+                    <div style="font-family:'Instrument Serif';font-style:italic;font-size:15px;color:var(--soft);">{{ b.readout }}</div>
+                  </div>
+                  <div style="position:relative;height:9px;margin-top:9px;border-bottom:1px solid var(--rule);">
+                    <div style="position:absolute;left:0;bottom:-1px;height:3px;background:var(--a);width:{{ b.width }};transition:width 900ms cubic-bezier(.25,.9,.3,1);transition-delay:{{ b.delay }};"></div>
+                  </div>
+                </div>
+              </sc-for>
+              <div style="border-top:1px solid var(--rule);"></div>
+            </div>
+          </div>
+
+          <div style="margin-top:30px;border:1px solid var(--rule);min-height:104px;display:grid;place-items:center;background:var(--paper2);">
+            <div style="font-family:'Instrument Sans';font-weight:500;font-size:10px;letter-spacing:.2em;color:var(--soft);text-transform:uppercase;">Advertisement</div>
+          </div>
+
+          <div style="margin-top:32px;border-top:1.5px solid var(--ink);padding-top:22px;">
+            <div style="font-family:'Bricolage Grotesque';font-weight:800;font-size:27px;letter-spacing:-.03em;">Take the plate with you</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:17px;color:var(--soft);margin-top:6px;">Somebody in your gym is a Sloth. Help them find out.</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;">
+              <button onClick="{{ download }}" style="appearance:none;cursor:pointer;border:none;min-height:56px;background:var(--ink);color:var(--paper);font-family:'Bricolage Grotesque';font-weight:800;font-size:18px;letter-spacing:-.02em;transition:opacity 200ms;" style-hover="opacity:.86">{{ downloadLabel }}</button>
+              <button onClick="{{ share }}" style="appearance:none;cursor:pointer;min-height:56px;background:none;border:1.5px solid var(--ink);color:var(--ink);font-family:'Bricolage Grotesque';font-weight:700;font-size:18px;letter-spacing:-.02em;transition:background 200ms,color 200ms;" style-hover="background:var(--ink);color:var(--paper)">{{ shareLabel }}</button>
+            </div>
+          </div>
+
+          <div style="margin-top:26px;border:1px solid var(--ink);border-left:4px solid var(--a);padding:18px 16px;transition:border-color 520ms;">
+            <div style="font-family:'Instrument Sans';font-weight:600;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--soft);">Next classification</div>
+            <div style="font-family:'Bricolage Grotesque';font-weight:800;font-size:28px;letter-spacing:-.03em;margin-top:6px;">{{ nextAnimal }}</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:16px;line-height:1.55;color:var(--soft);margin-top:5px;text-wrap:pretty;">{{ nextLine }}</div>
+          </div>
+
+          <div style="text-align:center;margin-top:36px;font-family:'Instrument Sans';font-weight:600;font-size:10px;letter-spacing:.2em;color:var(--soft);text-transform:uppercase;">howfitami.com</div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:420,&quot;height&quot;:900}}">
+const ARENAS = {
+  fit: { word:'FIT', name:'Bodyweight arena', accent:'#4C6B3C', blurb:'Push, pull, hold.', noun:'efforts',
+    ranks:[
+      ['Sloth','Bradypus otiosus','Rarely observed in motion. Thrives on soft furniture.'],
+      ['Meerkat','Suricata vigilans','Upright, alert, powered largely by panic.'],
+      ['Mountain Goat','Oreamnos firmus','Sure footed. Nobody worries about this one.'],
+      ['Spider Monkey','Ateles pendulus','Hangs freely. Pull-ups appear to cost nothing.'],
+      ['Orangutan','Pongo tenax','Long limbs, longer sets, entirely unhurried.'],
+      ['Silverback','Gorilla dominans','Occupies the floor. The floor does not object.']],
+    metrics:[
+      {k:'pushups',label:'Push-ups',hint:'max unbroken',unit:'reps',base:32,sd:15,bwPow:0.25,fem:0.70},
+      {k:'pullups',label:'Pull-ups',hint:'strict, max',unit:'reps',base:8,sd:6,bwPow:0.55,fem:0.50},
+      {k:'situps',label:'Sit-ups',hint:'in two minutes',unit:'reps',base:42,sd:15,bwPow:0.15,fem:0.86}] },
+  strong: { word:'STRONG', name:'Barbell arena', accent:'#C7392C', blurb:'Squat, bench, pull.', noun:'lifts',
+    ranks:[
+      ['House Cat','Felis mollis','Warm, soft, and entirely uninterested in the barbell.'],
+      ['Goat','Capra obstinata','Stubborn beyond reason. It counts for something.'],
+      ['Ox','Bos laborans','Moves the load. Declines to discuss it.'],
+      ['Grizzly','Ursus gravis','Others re-rack faster in its presence.'],
+      ['Gorilla','Gorilla ferreus','Approach the squat rack with caution.'],
+      ['Mammoth','Mammuthus redivivus','Numbers thought extinct. Still observed lifting.']],
+    metrics:[
+      {k:'squat',label:'Squat',hint:'weight x reps',unit:'kg',base:125,sd:44,bwPow:-0.66,fem:0.62,load:true},
+      {k:'bench',label:'Bench press',hint:'weight x reps',unit:'kg',base:90,sd:32,bwPow:-0.66,fem:0.56,load:true},
+      {k:'deadlift',label:'Deadlift',hint:'weight x reps',unit:'kg',base:150,sd:50,bwPow:-0.66,fem:0.66,load:true}] },
+  fast: { word:'FAST', name:'Speed arena', accent:'#1E4FA3', blurb:'Road and track.', noun:'times',
+    ranks:[
+      ['Tortoise','Testudo perseverans','Will finish. Records suggest eventually.'],
+      ['Hare','Lepus impatiens','Explosive starts. Well documented regrets.'],
+      ['Greyhound','Canis velox','Built to chase. Little else.'],
+      ['Horse','Equus fortis','Large engine, no theatrics.'],
+      ['Cheetah','Acinonyx fulminans','Terrifying for precisely this distance.'],
+      ['Peregrine Falcon','Falco descendens','Does not run. Descends.']],
+    metrics:[
+      {k:'r5k',label:'5k',hint:'mm:ss',base:1680,sd:290,time:true,fem:1.13},
+      {k:'r10k',label:'10k',hint:'mm:ss',base:3540,sd:610,time:true,fem:1.13},
+      {k:'rhalf',label:'Half marathon',hint:'h:mm:ss',base:7800,sd:1250,time:true,fem:1.14},
+      {k:'rfull',label:'Marathon',hint:'h:mm:ss',base:16200,sd:2500,time:true,fem:1.15}] },
+  savage: { word:'SAVAGE', name:'Hybrid arena', accent:'#B5651D', blurb:'Benchmark scores.', noun:'benchmarks',
+    ranks:[
+      ['Panda','Ailuropoda quiescens','Elite at rest. World class at snacks.'],
+      ['Husky','Canis clamosus','Loud, willing, faintly unhinged.'],
+      ['Wolf','Canis tenax','Does not skip the ugly portions.'],
+      ['Kangaroo','Macropus explodens','Everything is explosive, including the specimen.'],
+      ['Wolverine','Gulo furens','Small window. Total violence.'],
+      ['Orca','Orcinus apex','Apex. Nothing in the water argues.']],
+    metrics:[
+      {k:'fran',label:'Fran',hint:'mm:ss',base:330,sd:115,time:true,fem:1.14},
+      {k:'grace',label:'Grace',hint:'mm:ss',base:245,sd:88,time:true,fem:1.16},
+      {k:'murph',label:'Murph',hint:'h:mm:ss',base:3300,sd:700,time:true,fem:1.12}] }
+};
+const ORDER = ['fit','strong','fast','savage'];
+const TIERS = [0,20,40,62,80,93];
+const SCOPE_F = { country:0.94, region:0.96, continent:0.98, world:1 };
+
+const RAW = `Indonesia|ID|Southeast Asia|Asia|280
+Philippines|PH|Southeast Asia|Asia|118
+Vietnam|VN|Southeast Asia|Asia|100
+Thailand|TH|Southeast Asia|Asia|72
+Myanmar|MM|Southeast Asia|Asia|55
+Malaysia|MY|Southeast Asia|Asia|35
+Cambodia|KH|Southeast Asia|Asia|17
+Laos|LA|Southeast Asia|Asia|8
+Singapore|SG|Southeast Asia|Asia|6
+Timor-Leste|TL|Southeast Asia|Asia|1
+Brunei|BN|Southeast Asia|Asia|1
+China|CN|East Asia|Asia|1420
+Japan|JP|East Asia|Asia|123
+South Korea|KR|East Asia|Asia|52
+North Korea|KP|East Asia|Asia|26
+Taiwan|TW|East Asia|Asia|23
+Hong Kong|HK|East Asia|Asia|7
+Mongolia|MN|East Asia|Asia|3
+India|IN|South Asia|Asia|1440
+Pakistan|PK|South Asia|Asia|245
+Bangladesh|BD|South Asia|Asia|173
+Afghanistan|AF|South Asia|Asia|42
+Nepal|NP|South Asia|Asia|31
+Sri Lanka|LK|South Asia|Asia|22
+Bhutan|BT|South Asia|Asia|1
+Maldives|MV|South Asia|Asia|1
+Uzbekistan|UZ|Central Asia|Asia|36
+Kazakhstan|KZ|Central Asia|Asia|20
+Tajikistan|TJ|Central Asia|Asia|10
+Kyrgyzstan|KG|Central Asia|Asia|7
+Turkmenistan|TM|Central Asia|Asia|7
+Iran|IR|Middle East|Asia|89
+Turkey|TR|Middle East|Asia|86
+Iraq|IQ|Middle East|Asia|45
+Saudi Arabia|SA|Middle East|Asia|37
+Yemen|YE|Middle East|Asia|35
+Syria|SY|Middle East|Asia|24
+Jordan|JO|Middle East|Asia|11
+United Arab Emirates|AE|Middle East|Asia|10
+Azerbaijan|AZ|Middle East|Asia|10
+Israel|IL|Middle East|Asia|10
+Lebanon|LB|Middle East|Asia|6
+Palestine|PS|Middle East|Asia|5
+Oman|OM|Middle East|Asia|5
+Kuwait|KW|Middle East|Asia|5
+Georgia|GE|Middle East|Asia|4
+Armenia|AM|Middle East|Asia|3
+Qatar|QA|Middle East|Asia|3
+Bahrain|BH|Middle East|Asia|2
+Cyprus|CY|Middle East|Asia|1
+Germany|DE|Western Europe|Europe|84
+France|FR|Western Europe|Europe|66
+Netherlands|NL|Western Europe|Europe|18
+Belgium|BE|Western Europe|Europe|12
+Austria|AT|Western Europe|Europe|9
+Switzerland|CH|Western Europe|Europe|9
+Luxembourg|LU|Western Europe|Europe|1
+United Kingdom|GB|Northern Europe|Europe|69
+Sweden|SE|Northern Europe|Europe|11
+Denmark|DK|Northern Europe|Europe|6
+Finland|FI|Northern Europe|Europe|6
+Norway|NO|Northern Europe|Europe|6
+Ireland|IE|Northern Europe|Europe|5
+Lithuania|LT|Northern Europe|Europe|3
+Latvia|LV|Northern Europe|Europe|2
+Estonia|EE|Northern Europe|Europe|1
+Iceland|IS|Northern Europe|Europe|1
+Italy|IT|Southern Europe|Europe|59
+Spain|ES|Southern Europe|Europe|48
+Portugal|PT|Southern Europe|Europe|10
+Greece|GR|Southern Europe|Europe|10
+Serbia|RS|Southern Europe|Europe|7
+Croatia|HR|Southern Europe|Europe|4
+Bosnia and Herzegovina|BA|Southern Europe|Europe|3
+Albania|AL|Southern Europe|Europe|3
+North Macedonia|MK|Southern Europe|Europe|2
+Slovenia|SI|Southern Europe|Europe|2
+Montenegro|ME|Southern Europe|Europe|1
+Malta|MT|Southern Europe|Europe|1
+Russia|RU|Eastern Europe|Europe|144
+Poland|PL|Eastern Europe|Europe|38
+Ukraine|UA|Eastern Europe|Europe|38
+Romania|RO|Eastern Europe|Europe|19
+Czechia|CZ|Eastern Europe|Europe|11
+Hungary|HU|Eastern Europe|Europe|10
+Belarus|BY|Eastern Europe|Europe|9
+Bulgaria|BG|Eastern Europe|Europe|6
+Slovakia|SK|Eastern Europe|Europe|5
+Moldova|MD|Eastern Europe|Europe|3
+Nigeria|NG|West Africa|Africa|230
+Ghana|GH|West Africa|Africa|34
+Ivory Coast|CI|West Africa|Africa|29
+Niger|NE|West Africa|Africa|27
+Mali|ML|West Africa|Africa|24
+Burkina Faso|BF|West Africa|Africa|23
+Senegal|SN|West Africa|Africa|18
+Guinea|GN|West Africa|Africa|14
+Benin|BJ|West Africa|Africa|14
+Togo|TG|West Africa|Africa|9
+Sierra Leone|SL|West Africa|Africa|9
+Liberia|LR|West Africa|Africa|5
+Mauritania|MR|West Africa|Africa|5
+Gambia|GM|West Africa|Africa|3
+Ethiopia|ET|East Africa|Africa|129
+Tanzania|TZ|East Africa|Africa|68
+Kenya|KE|East Africa|Africa|56
+Uganda|UG|East Africa|Africa|50
+Mozambique|MZ|East Africa|Africa|34
+Madagascar|MG|East Africa|Africa|31
+Zambia|ZM|East Africa|Africa|21
+Malawi|MW|East Africa|Africa|21
+Somalia|SO|East Africa|Africa|19
+Zimbabwe|ZW|East Africa|Africa|17
+Rwanda|RW|East Africa|Africa|14
+Burundi|BI|East Africa|Africa|14
+South Sudan|SS|East Africa|Africa|12
+Mauritius|MU|East Africa|Africa|1
+Egypt|EG|North Africa|Africa|114
+Sudan|SD|North Africa|Africa|48
+Algeria|DZ|North Africa|Africa|46
+Morocco|MA|North Africa|Africa|38
+Tunisia|TN|North Africa|Africa|12
+Libya|LY|North Africa|Africa|7
+DR Congo|CD|Central Africa|Africa|105
+Cameroon|CM|Central Africa|Africa|29
+Chad|TD|Central Africa|Africa|19
+Congo|CG|Central Africa|Africa|6
+Central African Republic|CF|Central Africa|Africa|6
+Gabon|GA|Central Africa|Africa|2
+South Africa|ZA|Southern Africa|Africa|61
+Angola|AO|Southern Africa|Africa|37
+Botswana|BW|Southern Africa|Africa|3
+Namibia|NA|Southern Africa|Africa|3
+Lesotho|LS|Southern Africa|Africa|2
+Eswatini|SZ|Southern Africa|Africa|1
+United States|US|North America|North America|342
+Mexico|MX|North America|North America|130
+Canada|CA|North America|North America|39
+Guatemala|GT|Central America|North America|18
+Honduras|HN|Central America|North America|11
+Nicaragua|NI|Central America|North America|7
+El Salvador|SV|Central America|North America|6
+Costa Rica|CR|Central America|North America|5
+Panama|PA|Central America|North America|4
+Belize|BZ|Central America|North America|1
+Haiti|HT|Caribbean|North America|12
+Cuba|CU|Caribbean|North America|11
+Dominican Republic|DO|Caribbean|North America|11
+Jamaica|JM|Caribbean|North America|3
+Trinidad and Tobago|TT|Caribbean|North America|1
+Bahamas|BS|Caribbean|North America|1
+Barbados|BB|Caribbean|North America|1
+Brazil|BR|South America|South America|218
+Colombia|CO|South America|South America|53
+Argentina|AR|South America|South America|46
+Peru|PE|South America|South America|34
+Venezuela|VE|South America|South America|29
+Chile|CL|South America|South America|20
+Ecuador|EC|South America|South America|18
+Bolivia|BO|South America|South America|12
+Paraguay|PY|South America|South America|7
+Uruguay|UY|South America|South America|3
+Guyana|GY|South America|South America|1
+Suriname|SR|South America|South America|1
+Australia|AU|Oceania|Oceania|27
+Papua New Guinea|PG|Oceania|Oceania|11
+New Zealand|NZ|Oceania|Oceania|5
+Fiji|FJ|Oceania|Oceania|1
+Solomon Islands|SB|Oceania|Oceania|1
+Vanuatu|VU|Oceania|Oceania|1
+Samoa|WS|Oceania|Oceania|1
+Tonga|TO|Oceania|Oceania|1`;
+
+const COUNTRIES = RAW.split('\n').map(l=>{ const p=l.split('|');
+  return {name:p[0],iso:p[1],region:p[2],continent:p[3],pop:+p[4]}; });
+const WORLD_POP = 8100;
+function flagOf(iso){ return String.fromCodePoint(...iso.split('').map(c=>127397+c.charCodeAt(0))); }
+function sumBy(key,val){ return COUNTRIES.reduce((a,c)=>a+(c[key]===val?c.pop:0),0); }
+function fmtPop(m){ return m>=1000 ? (m/1000).toFixed(1).replace(/\.0$/,'')+'B' : m+'M'; }
+function possessive(n){ return /s$/i.test(n) ? n+"'" : n+"'s"; }
+function latinSub(name){
+  const s=name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z]/g,'');
+  return s.slice(0,9).replace(/[aeiou]+$/,'')+'ensis';
+}
+function phi(z){ const t=1/(1+0.2316419*Math.abs(z)); const d=0.3989423*Math.exp(-z*z/2);
+  let p=d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));
+  return z>0?1-p:p; }
+function ordinal(n){ const r=n%100; if(r>=11&&r<=13) return n+'th';
+  return n+({1:'st',2:'nd',3:'rd'}[n%10]||'th'); }
+function parseTime(s){ if(!s) return null; const parts=String(s).trim().split(':').map(Number);
+  if(parts.some(isNaN)) return null;
+  if(parts.length===3) return parts[0]*3600+parts[1]*60+parts[2];
+  if(parts.length===2) return parts[0]*60+parts[1];
+  if(parts.length===1) return parts[0]*60; return null; }
+function fmtTime(sec){ const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=Math.round(sec%60);
+  const p=n=>String(n).padStart(2,'0');
+  return h?h+':'+p(m)+':'+p(s):m+':'+p(s); }
+function pad6(w){ const n=Math.max(0,6-w.length), l=Math.floor(n/2);
+  return ' '.repeat(l)+w+' '.repeat(n-l); }
+
+class Component extends DCLogic {
+  state = { arena:'fit', prev:'fit', flipKey:0, sex:'m', age:'', bw:'', vals:{},
+            q:'', open:false, country:null, scope:'country',
+            screen:'calc', step:0, counter:100, downloading:false, shared:false };
+
+  componentDidMount(){
+    if(this.reduced()) return;
+    const seq=['strong','fast','savage','fit'];
+    this.boot=seq.map((a,i)=>setTimeout(()=>this.go(a,true),160+i*620));
+  }
+  componentWillUnmount(){ this.clearTimers(); (this.boot||[]).forEach(clearTimeout); }
+  clearTimers(){ (this.timers||[]).forEach(clearTimeout); if(this.tick) clearInterval(this.tick); this.timers=[]; }
+  reduced(){ return window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches; }
+
+  go(next,boot){
+    this.clearTimers();
+    this.setState(st=>({ prev:st.arena, arena:next, flipKey:st.flipKey+1,
+      vals:boot?st.vals:{}, screen:'calc', step:0 }));
+  }
+  flip=()=>{ (this.boot||[]).forEach(clearTimeout);
+    this.go(ORDER[(ORDER.indexOf(this.state.arena)+1)%4]); };
+
+  setVal(k,v){ this.setState(s=>({ vals:{...s.vals,[k]:v} })); }
+
+  scopeList(){
+    const c=this.state.country; if(!c) return [];
+    const out=[{k:'country',label:c.name,pop:c.pop}];
+    if(c.region!==c.continent) out.push({k:'region',label:c.region,pop:sumBy('region',c.region)});
+    out.push({k:'continent',label:c.continent,pop:sumBy('continent',c.continent)});
+    out.push({k:'world',label:'The world',pop:WORLD_POP});
+    return out;
+  }
+
+  metricValue(m){
+    const v=this.state.vals;
+    if(m.time) return parseTime(v[m.k]);
+    const a=parseFloat(v[m.k]); if(isNaN(a)) return null;
+    if(m.load){ const r=parseInt(v[m.k+'_reps'],10);
+      return (!isNaN(r)&&r>1)? a*(1+Math.min(r,12)/30) : a; }
+    return a;
+  }
+  meanFor(m,f){
+    const bw=parseFloat(this.state.bw)||75, age=parseFloat(this.state.age)||30;
+    let mean=m.base;
+    if(m.bwPow) mean*=Math.pow(bw/75,-m.bwPow);
+    const ageF = age<=28 ? 1-(28-Math.min(age,28))*0.006 : 1-(age-28)*0.0072;
+    if(m.time) mean/=Math.max(ageF,0.55); else mean*=Math.max(ageF,0.5);
+    mean*=m.fem&&this.state.sex==='f'?m.fem:1;
+    if(m.time) mean/=f; else mean*=f;
+    return mean;
+  }
+  scoreAt(scopeKey){
+    const arena=ARENAS[this.state.arena], f=SCOPE_F[scopeKey]||1, rows=[];
+    arena.metrics.forEach(m=>{
+      const x=this.metricValue(m); if(x==null||x<=0) return;
+      const mean=this.meanFor(m,f), sd=m.time? m.sd/f : m.sd*f;
+      const z=m.time? (mean-x)/sd : (x-mean)/sd;
+      rows.push({m,x,pct:Math.min(99.4,Math.max(0.6,phi(z)*100))});
+    });
+    if(!rows.length) return null;
+    return {overall:rows.reduce((a,r)=>a+r.pct,0)/rows.length, rows};
+  }
+  tierOf(p){ let i=0; TIERS.forEach((t,n)=>{ if(p>=t) i=n; }); return i; }
+
+  result(){
+    const c=this.state.country; if(!c) return null;
+    const r=this.scoreAt(this.state.scope); if(!r) return null;
+    const arena=ARENAS[this.state.arena];
+    const tier=this.tierOf(r.overall);
+    const w=this.scoreAt('world'), wTier=w?this.tierOf(w.overall):tier;
+    const scope=this.scopeList().find(s=>s.k===this.state.scope)||this.scopeList()[0];
+    const rank=arena.ranks[tier];
+    return { ...r, arena, tier, wTier, scope, country:c,
+      animal:rank[0], binomial:rank[1]+', subsp. '+latinSub(c.name), tagline:rank[2],
+      worldAnimal:arena.ranks[wTier][0],
+      title: scope.k==='world' ? 'Global '+rank[0] : possessive(scope.label)+' '+rank[0] };
+  }
+
+  submit=()=>{
+    const r=this.result();
+    if(!r){ if(!this.state.country) this.setState({open:true}); return; }
+    this.clearTimers();
+    const top=Math.round(100-r.overall);
+    if(this.reduced()){ this.setState({screen:'result',step:2,counter:top}); return; }
+    this.setState({screen:'result',step:0,counter:100});
+    const start=performance.now(), dur=1050;
+    this.tick=setInterval(()=>{
+      const t=Math.min(1,(performance.now()-start)/dur), e=1-Math.pow(1-t,3);
+      this.setState({counter:Math.round(100-(100-top)*e)});
+      if(t>=1) clearInterval(this.tick);
+    },32);
+    this.timers=[ setTimeout(()=>this.setState({step:2}),240) ];
+  };
+  back=()=>{ this.clearTimers(); this.setState({screen:'calc',step:0}); };
+
+  // ---- 1080x1920 specimen plate ----
+  async drawCard(){
+    const r=this.result(); if(!r) return null;
+    const W=1080,H=1920, cv=document.createElement('canvas');
+    cv.width=W; cv.height=H;
+    const x=cv.getContext('2d');
+    const PAPER='#EDE4D2', INK='#1A1714', SOFT='#6E6455', RULE='#C3B698', A=r.arena.accent;
+    try{ await document.fonts.ready; }catch(e){}
+    x.fillStyle=PAPER; x.fillRect(0,0,W,H);
+    x.fillStyle='rgba(26,23,20,.05)';
+    for(let i=0;i<9000;i++) x.fillRect(Math.random()*W,Math.random()*H,1.4,1.4);
+
+    const L=76, R=W-76;
+    x.strokeStyle=INK; x.lineWidth=2; x.strokeRect(48,48,W-96,H-96);
+    const tick=(cx,cy,dx,dy)=>{ x.beginPath(); x.moveTo(cx,cy); x.lineTo(cx+dx,cy); x.moveTo(cx,cy); x.lineTo(cx,cy+dy); x.stroke(); };
+    x.lineWidth=2; tick(78,78,34,0); tick(W-78,78,-34,0); tick(78,H-78,34,0); tick(W-78,H-78,-34,0);
+
+    const sp=(v)=>{ try{ x.letterSpacing=v; }catch(e){} };
+    x.textBaseline='alphabetic';
+
+    x.fillStyle=INK; x.font='800 34px "Bricolage Grotesque", sans-serif'; sp('-0.5px');
+    x.textAlign='left'; x.fillText('HOWFITAMI.COM',L,150);
+    sp('4px'); x.font='600 20px "Instrument Sans", sans-serif'; x.fillStyle=SOFT;
+    x.textAlign='right'; x.fillText('FIELD GUIDE',R,150); sp('0px');
+    x.strokeStyle=INK; x.lineWidth=2; x.beginPath(); x.moveTo(L,178); x.lineTo(R,178); x.stroke();
+
+    // plate
+    const nRows=Math.min(4,r.rows.length), barTop=H-190;
+    const py=214, ph=nRows>3?596:690;
+    x.strokeStyle=INK; x.lineWidth=2; x.strokeRect(L,py,R-L,ph);
+    x.save(); x.beginPath(); x.rect(L,py,R-L,ph); x.clip();
+    x.strokeStyle=A; x.globalAlpha=.16; x.lineWidth=2;
+    for(let i=-ph;i<R-L;i+=14){ x.beginPath(); x.moveTo(L+i,py+ph); x.lineTo(L+i+ph,py); x.stroke(); }
+    x.restore();
+    x.textAlign='center'; x.fillStyle=SOFT;
+    sp('4px'); x.font='600 22px "Instrument Sans", sans-serif';
+    x.fillText('ENGRAVED PLATE '+String(r.tier+1).padStart(2,'0'),W/2,py+ph/2-14); sp('0px');
+    x.font='italic 32px "Instrument Serif", serif';
+    x.fillText('Illustration to be supplied',W/2,py+ph/2+34);
+
+    // stamp
+    x.save(); x.translate(R-96,py-96); x.rotate(-0.19);
+    x.strokeStyle=A; x.lineWidth=3; x.beginPath(); x.arc(0,0,74,0,Math.PI*2); x.stroke();
+    x.lineWidth=1.5; x.beginPath(); x.arc(0,0,63,0,Math.PI*2); x.stroke();
+    x.fillStyle=A; x.textAlign='center';
+    sp('3px'); x.font='600 14px "Instrument Sans", sans-serif'; x.fillText('CLASSIFIED',0,-20);
+    sp('-0.5px'); x.font='800 30px "Bricolage Grotesque", sans-serif'; x.fillText(this.stamp().day,0,14);
+    sp('3px'); x.font='600 14px "Instrument Sans", sans-serif'; x.fillText(this.stamp().rest,0,40); sp('0px');
+    x.restore();
+
+    // name
+    x.textAlign='left'; x.fillStyle=INK;
+    let size=112; x.font='800 '+size+'px "Bricolage Grotesque", sans-serif'; sp('-4px');
+    while(x.measureText(r.animal.toUpperCase()).width>R-L && size>52){ size-=4; x.font='800 '+size+'px "Bricolage Grotesque", sans-serif'; }
+    x.fillText(r.animal.toUpperCase(),L,py+ph+112); sp('0px');
+    x.fillStyle=SOFT; x.font='italic 40px "Instrument Serif", serif';
+    x.fillText(r.binomial,L,py+ph+162);
+
+    x.strokeStyle=RULE; x.lineWidth=1.5; x.beginPath(); x.moveTo(L,py+ph+200); x.lineTo(R,py+ph+200); x.stroke();
+
+    // measurement
+    const top=Math.round(100-r.overall);
+    x.fillStyle=SOFT; sp('4px'); x.font='600 20px "Instrument Sans", sans-serif';
+    x.fillText('MEASURED AT',L,py+ph+244); sp('0px');
+    x.fillStyle=A; sp('-6px'); x.font='800 148px "Bricolage Grotesque", sans-serif';
+    x.fillText('TOP '+top+'%',L,py+ph+372); sp('0px');
+
+    x.fillStyle=INK; x.font='700 40px "Bricolage Grotesque", sans-serif'; sp('-1px');
+    x.fillText(r.title,L,py+ph+430); sp('0px');
+    x.fillStyle=SOFT; x.font='italic 30px "Instrument Serif", serif';
+    x.fillText(this.ladderText(r),L,py+ph+474);
+
+    // field measurements
+    let my=barTop-42-nRows*94;
+    x.strokeStyle=RULE; x.lineWidth=1.5;
+    r.rows.slice(0,nRows).forEach(row=>{
+      x.beginPath(); x.moveTo(L,my); x.lineTo(R,my); x.stroke();
+      x.fillStyle=INK; x.font='700 30px "Bricolage Grotesque", sans-serif'; x.textAlign='left';
+      x.fillText(row.m.label,L,my+42);
+      x.fillStyle=SOFT; x.font='italic 27px "Instrument Serif", serif'; x.textAlign='right';
+      x.fillText((row.m.time?fmtTime(row.x):Math.round(row.x)+' '+(row.m.unit||''))+'  ·  '+ordinal(Math.round(row.pct)),R,my+42);
+      x.strokeStyle=A; x.lineWidth=5; x.beginPath(); x.moveTo(L,my+62);
+      x.lineTo(L+(R-L)*Math.max(.03,row.pct/100),my+62); x.stroke();
+      x.strokeStyle=RULE; x.lineWidth=1.5;
+      my+=94;
+    });
+    x.beginPath(); x.moveTo(L,my); x.lineTo(R,my); x.stroke();
+
+    // challenge bar
+    x.fillStyle=A; x.fillRect(48,H-190,W-96,142);
+    x.fillStyle=PAPER; x.textAlign='center'; sp('-2px');
+    x.font='800 56px "Bricolage Grotesque", sans-serif';
+    x.fillText('HOW FIT ARE YOU? PROVE IT',W/2,H-118); sp('6px');
+    x.font='600 24px "Instrument Sans", sans-serif';
+    x.fillText('HOWFITAMI.COM',W/2,H-74); sp('0px');
+    return cv;
+  }
+  stamp(){ const d=new Date();
+    return { day:String(d.getDate()).padStart(2,'0'),
+      rest:d.toLocaleString('en',{month:'short'}).toUpperCase()+' '+d.getFullYear() }; }
+  ladderText(r){ return r.tier===r.wTier
+    ? 'and globally, the same verdict.'
+    : 'but globally: a '+r.worldAnimal+'.'; }
+
+  download=async()=>{
+    if(this.state.downloading) return;
+    this.setState({downloading:true});
+    try{
+      const cv=await this.drawCard();
+      if(cv) cv.toBlob(b=>{ const u=URL.createObjectURL(b), a=document.createElement('a');
+        a.href=u; a.download='howfitami-specimen.png'; a.click();
+        setTimeout(()=>URL.revokeObjectURL(u),4000); },'image/png');
+    }catch(e){}
+    setTimeout(()=>this.setState({downloading:false}),900);
+  };
+  share=async()=>{
+    const r=this.result(); if(!r) return;
+    const text=r.title+'. Top '+Math.round(100-r.overall)+'%. howfitami.com';
+    try{
+      const cv=await this.drawCard();
+      const blob=cv&&await new Promise(res=>cv.toBlob(res,'image/png'));
+      const file=blob&&new File([blob],'howfitami-specimen.png',{type:'image/png'});
+      if(file&&navigator.canShare&&navigator.canShare({files:[file]})){
+        await navigator.share({files:[file],text}); return; }
+      if(navigator.share){ await navigator.share({text,title:'howfitami.com'}); return; }
+    }catch(e){ return; }
+    try{ await navigator.clipboard.writeText(text); }catch(e){}
+    this.setState({shared:true}); setTimeout(()=>this.setState({shared:false}),1600);
+  };
+
+  renderVals(){
+    const s=this.state, arena=ARENAS[s.arena], A=arena.accent;
+    try{ document.documentElement.style.setProperty('--a',A); }catch(e){}
+    const cur=pad6(arena.word), prev=pad6(ARENAS[s.prev].word);
+
+    const sel=a=>({ bg:a?A:'transparent', fg:a?'#EDE4D2':'#1A1714' });
+
+    const q=s.q.trim().toLowerCase();
+    const matched = q ? COUNTRIES.filter(c=>c.name.toLowerCase().includes(q))
+        .sort((a,b)=>(a.name.toLowerCase().indexOf(q)-b.name.toLowerCase().indexOf(q))||(b.pop-a.pop)).slice(0,7)
+      : COUNTRIES.slice().sort((a,b)=>b.pop-a.pop).slice(0,7);
+
+    const scopes=this.scopeList();
+    const ringSizes=[58,98,140,182];
+    const rings=scopes.map((sc,i)=>{
+      const size=ringSizes[i]||182, active=s.scope===sc.k;
+      return { label:sc.label, pool:fmtPop(sc.pop), z:String(10-i),
+        size:size+'px', off:(-size/2)+'px',
+        border:'1.5px solid '+(active?A:'#C3B698'),
+        bg: active?'color-mix(in srgb, '+A+' 9%, transparent)':'transparent',
+        rowBorder: active?A:'transparent', rowBg: active?'color-mix(in srgb, '+A+' 8%, transparent)':'transparent',
+        dot: active?A:'#C3B698', dotFill: active?A:'transparent',
+        onSelect:()=>this.setState({scope:sc.k}) };
+    });
+
+    const fields=arena.metrics.map((m,i)=>({
+      label:m.label, hint:m.hint, delay:(i*60)+'ms',
+      cols:m.load?'1.4fr 1fr':'1fr', hasReps:!!m.load,
+      inputType:m.time?'text':'number', mode:m.time?'text':'decimal',
+      p1:m.time?(m.base>3600?'1:45:00':fmtTime(m.base)):(m.load?'kg':'reps'),
+      v1:s.vals[m.k]||'', on1:e=>this.setVal(m.k,e.target.value),
+      v2:s.vals[m.k+'_reps']||'', on2:e=>this.setVal(m.k+'_reps',e.target.value)
+    }));
+
+    const r=this.result();
+    const showResult=s.screen==='result'&&!!r;
+    const revealed=s.step>=2;
+    const bd=r? r.rows.map((row,i)=>({
+      label:row.m.label,
+      readout:(row.m.time?fmtTime(row.x):Math.round(row.x)+' '+(row.m.unit||''))+'  ·  '+ordinal(Math.round(row.pct)),
+      width:revealed?Math.max(3,Math.round(row.pct))+'%':'0%',
+      delay:(220+i*140)+'ms'
+    })):[];
+
+    let nextAnimal='', nextLine='';
+    if(r){
+      if(r.tier>=5){ nextAnimal='Nothing above you'; nextLine='Top of the arena. Flip the board and find a weakness.'; }
+      else {
+        const nx=arena.ranks[r.tier+1][0], gap=Math.max(1,Math.round(TIERS[r.tier+1]-r.overall));
+        const weak=r.rows.slice().sort((a,b)=>a.pct-b.pct)[0];
+        const hint = weak.m.time ? 'Take about '+Math.max(20,Math.round(weak.x*0.06))+' seconds off the '+weak.m.label.toLowerCase()+'.'
+          : weak.m.load ? 'Add roughly '+Math.max(5,Math.round(weak.x*0.12))+' kg to the '+weak.m.label.toLowerCase()+'.'
+          : 'Add about '+Math.max(2,Math.round(weak.x*0.22))+' more '+weak.m.label.toLowerCase()+'.';
+        nextAnimal=nx; nextLine=gap+' percentile points away. '+hint;
+      }
+    }
+
+    const filled=arena.metrics.filter(m=>this.metricValue(m)).length;
+    const st=this.stamp();
+
+    return {
+      accentVar:A, flipKey:s.flipKey, arenaKey:s.arena,
+      arenaWord:arena.word, arenaName:arena.name, arenaBlurb:arena.blurb,
+      tiles:cur.split('').map((ch,i)=>({
+        cur:ch===' '?'':ch, prev:prev[i]===' '?'':prev[i],
+        d1:(i*52)+'ms', d2:(i*52+250)+'ms' })),
+      flip:this.flip,
+      sexes:[{k:'m',label:'Male',d:'1.5px solid #1A1714'},{k:'f',label:'Female',d:'none'}].map(o=>({
+        label:o.label, divider:o.d, ...sel(s.sex===o.k), onSelect:()=>this.setState({sex:o.k}) })),
+      age:s.age, bw:s.bw,
+      onAge:e=>this.setState({age:e.target.value}),
+      onBw:e=>this.setState({bw:e.target.value}),
+      fields,
+      q:s.q, showList:s.open, noMatches:matched.length===0,
+      onQuery:e=>this.setState({q:e.target.value,open:true}),
+      onFocus:()=>this.setState({open:true}),
+      matches:matched.map(c=>({ name:c.name, region:c.region, flag:flagOf(c.iso),
+        onSelect:()=>this.setState({country:c,q:c.name,open:false,scope:'country'}) })),
+      hasCountry:!!s.country,
+      rings, ringsPainted:rings.slice().reverse(),
+      submit:this.submit,
+      validity: !s.country ? 'Pick a country and enter at least one measurement.'
+        : filled ? 'Recorded on '+filled+' of '+arena.metrics.length+' '+arena.noun+'. More entries sharpen the reading.'
+        : 'Enter at least one measurement.',
+      showResult, counter:s.counter,
+      plateNo: r? String(r.tier+1).padStart(2,'0') : '',
+      animal:r?r.animal:'', binomial:r?r.binomial:'', tagline:r?r.tagline:'',
+      title:r?r.title:'', ladder:r?this.ladderText(r):'',
+      stampDay:st.day, stampRest:st.rest,
+      breakdown:bd, nextAnimal, nextLine,
+      download:this.download, downloadLabel:s.downloading?'Drawing plate':'Download plate',
+      share:this.share, shareLabel:s.shared?'Copied':'Share',
+      back:this.back
+    };
+  }
+}
+
+</script>
+</body>
+</html>

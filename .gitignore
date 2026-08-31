@@ -1,0 +1,15 @@
+# Raw datasets — ~1.2 GB, re-fetch with data/download_datasets.py + download_real_sources.py
+data/raw/
+!data/raw/fitness/
+!data/raw/fitness/*.csv
+data/processed/strength_data.csv
+
+.venv/
+__pycache__/
+*.pyc
+.env
+.DS_Store
+
+# Unrelated design system for the ORIGO LVCA music project — see README section 4.2
+Beast/_ds/
+Beast/.thumbnail

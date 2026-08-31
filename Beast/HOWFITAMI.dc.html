@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800;900&family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --a:#C6F24E; --ink:#0E1013; --steel:#14171B; --panel:#1B1F24; --line:#2B3037; --chalk:#F1EFE9; --mute:#8B9099; }
+  html,body{margin:0;padding:0;background:#14171B;color:#F1EFE9;-webkit-font-smoothing:antialiased;}
+  body{font-family:Archivo,system-ui,sans-serif;}
+  *{box-sizing:border-box;}
+  a{color:var(--a);text-decoration:none;}
+  a:hover{color:#F1EFE9;}
+  input,button,select{font-family:inherit;}
+  input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+  input[type=number]{-moz-appearance:textfield;}
+  @keyframes hfa-in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  @keyframes hfa-plate{from{opacity:0;transform:scale(.9) translateY(18px)}to{opacity:1;transform:none}}
+  @keyframes hfa-sweep{from{transform:translateX(-120%) skewX(-18deg)}to{transform:translateX(220%) skewX(-18deg)}}
+  @keyframes hfa-glow{0%,100%{opacity:.42}50%{opacity:.72}}
+  @media (prefers-reduced-motion: reduce){*{animation-duration:.01ms !important;transition-duration:.01ms !important;}}
+</style>
+</helmet>
+
+<div style="--a:{{ accentVar }};min-height:100vh;background:var(--steel);position:relative;overflow-x:hidden;">
+
+  <div style="position:fixed;inset:0;pointer-events:none;opacity:.5;background:radial-gradient(120% 70% at 50% -10%, color-mix(in oklab, var(--a) 16%, transparent) 0%, transparent 60%);transition:background 620ms cubic-bezier(.2,.7,.2,1);"></div>
+  <div style="position:fixed;inset:0;pointer-events:none;opacity:.06;background-image:linear-gradient(var(--chalk) 1px,transparent 1px),linear-gradient(90deg,var(--chalk) 1px,transparent 1px);background-size:52px 52px;mask-image:radial-gradient(70% 55% at 50% 30%,#000,transparent);"></div>
+
+  <div style="position:relative;max-width:640px;margin:0 auto;padding:18px 20px 64px;">
+
+    <header style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding-bottom:28px;">
+      <div style="display:flex;align-items:center;gap:9px;">
+        <div style="width:26px;height:26px;border:2px solid var(--a);display:grid;place-items:center;transition:border-color 620ms cubic-bezier(.2,.7,.2,1);">
+          <div style="width:8px;height:8px;background:var(--a);transition:background 620ms cubic-bezier(.2,.7,.2,1);"></div>
+        </div>
+        <div style="font-family:'Big Shoulders Display';font-weight:800;font-size:19px;letter-spacing:.06em;line-height:1;">HOWFITAMI<span style="color:var(--mute)">.COM</span></div>
+      </div>
+      <div style="font-family:'JetBrains Mono';font-size:10px;letter-spacing:.16em;color:var(--mute);text-transform:uppercase;">Free · No signup</div>
+    </header>
+
+    <section style="padding:8px 0 34px;">
+      <h1 style="font-family:'Big Shoulders Display';font-weight:900;font-size:clamp(60px,17.5vw,116px);line-height:.82;letter-spacing:-.005em;margin:0;text-transform:uppercase;display:flex;flex-wrap:wrap;align-items:baseline;gap:0 .16em;">
+        <span>How</span>
+        <button onClick="{{ rollWord }}" aria-label="Change arena" style="appearance:none;border:3px solid var(--a);background:color-mix(in oklab, var(--a) 12%, transparent);color:var(--a);font:inherit;text-transform:uppercase;padding:.02em .16em .06em;cursor:pointer;position:relative;overflow:hidden;height:.98em;line-height:.98em;transition:border-color 620ms cubic-bezier(.2,.7,.2,1),background 620ms cubic-bezier(.2,.7,.2,1),color 620ms cubic-bezier(.2,.7,.2,1),width 560ms cubic-bezier(.16,.84,.24,1);" style-hover="background:color-mix(in oklab, var(--a) 22%, transparent)">
+          <span aria-hidden="true" style="display:block;height:0;overflow:hidden;visibility:hidden;">{{ currentWord }}</span>
+          <span style="position:absolute;left:.16em;top:.02em;text-align:left;transition:transform 560ms cubic-bezier(.16,.84,.24,1);transform:{{ rollTransform }}">
+            <sc-for list="{{ words }}" as="w" hint-placeholder-count="4"><span style="display:block;height:.98em;line-height:.98em;white-space:nowrap;">{{ w.label }}</span></sc-for>
+          </span>
+        </button>
+        <span>Am I?</span>
+      </h1>
+      <p style="font-family:'JetBrains Mono';font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin:18px 0 0;display:flex;align-items:center;gap:8px;">
+        <span style="width:14px;height:1px;background:var(--a);transition:background 620ms cubic-bezier(.2,.7,.2,1);"></span>
+        Tap the word · {{ arenaBlurb }}
+      </p>
+    </section>
+
+    <section key="{{ arenaKey }}" style="background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--a);padding:22px 20px 24px;transition:border-color 620ms cubic-bezier(.2,.7,.2,1);animation:hfa-in 480ms cubic-bezier(.2,.7,.2,1) both;">
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div>
+          <div style="font-family:'JetBrains Mono';font-size:10px;letter-spacing:.18em;color:var(--mute);text-transform:uppercase;margin-bottom:8px;">Sex</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+            <sc-for list="{{ sexes }}" as="s" hint-placeholder-count="2">
+              <button onClick="{{ s.onSelect }}" style="appearance:none;cursor:pointer;padding:13px 0;min-height:46px;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.fg }};font-family:'Big Shoulders Display';font-weight:700;font-size:17px;letter-spacing:.08em;text-transform:uppercase;transition:all 240ms cubic-bezier(.2,.7,.2,1);">{{ s.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div>
+            <div style="font-family:'JetBrains Mono';font-size:10px;letter-spacing:.18em;color:var(--mute);text-transform:uppercase;margin-bottom:8px;">Age</div>
+            <input type="number" inputMode="numeric" value="{{ age }}" onChange="{{ onAge }}" placeholder="30" style="width:100%;min-height:46px;background:#151A1F;border:1px solid var(--line);color:var(--chalk);font-family:'Big Shoulders Display';font-weight:700;font-size:20px;padding:0 12px;outline:none;transition:border-color 200ms,box-shadow 200ms;" style-focus="border-color:var(--a);box-shadow:0 0 0 3px color-mix(in oklab, var(--a) 18%, transparent)">
+          </div>
+          <div>
+            <div style="font-family:'JetBrains Mono';font-size:10px;letter-spacing:.18em;color:var(--mute);text-transform:uppercase;margin-bottom:8px;">Weight kg</div>
+            <input type="number" inputMode="decimal" value="{{ bw }}" onChange="{{ onBw }}" placeholder="75" style="width:100%;min-height:46px;background:#151A1F;border:1px solid var(--line);color:var(--chalk);font-family:'Big Shoulders Display';font-weight:700;font-size:20px;padding:0 12px;outline:none;transition:border-color 200ms,box-shadow 200ms;" style-focus="border-color:var(--a);box-shadow:0 0 0 3px color-mix(in oklab, var(--a) 18%, transparent)">
+          </div>
+        </div>
+      </div>
+
+      <div style="height:1px;background:var(--line);margin:22px 0 20px;"></div>
+
+      <div style="font-family:'JetBrains Mono';font-size:10px;letter-spacing:.18em;color:var(--a);text-transform:uppercase;margin-bottom:14px;transition:color 620ms cubic-bezier(.2,.7,.2,1);">{{ arenaName }}</div>
+
+      <div style="display:grid;gap:12px;">
+        <sc-for list="{{ fields }}" as="f" hint-placeholder-count="3">
+          <div style="animation:hfa-in 460ms cubic-bezier(.2,.7,.2,1) both;animation-delay:{{ f.delay }};">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:7px;">
+              <div style="font-family:'Big Shoulders Display';font-weight:700;font-size:19px;letter-spacing:.05em;text-transform:uppercase;">{{ f.label }}</div>
+              <div style="font-family:'JetBrains Mono';font-size:10px;letter-spacing:.1em;color:var(--mute);">{{ f.hint }}</div>
+            </div>
+            <div style="display:grid;grid-template-columns:{{ f.cols }};gap:8px;">
+              <input type="{{ f.inputType }}" inputMode="{{ f.mode }}" value="{{ f.v1 }}" onChange="{{ f.on1 }}" placeholder="{{ f.p1 }}" style="width:100%;min-height:52px;background:#151A1F;border:1px solid var(--line);color:var(--chalk);font-family:'JetBrains Mono';font-weight:500;font-size:17px;padding:0 14px;outline:none;transition:border-color 200ms,box-shadow 200ms;" style-focus="border-color:var(--a);box-shadow:0 0 0 3px color-mix(in oklab, var(--a) 18%, transparent)">
+              <sc-if value="{{ f.hasReps }}" hint-placeholder-val="{{ false }}">
+                <input type="number" inputMode="numeric" value="{{ f.v2 }}" onChange="{{ f.on2 }}" placeholder="reps" style="width:100%;min-height:52px;background:#151A1F;border:1px solid var(--line);color:var(--chalk);font-family:'JetBrains Mono';font-weight:500;font-size:17px;padding:0 14px;outline:none;transition:border-color 200ms,box-shadow 200ms;" style-focus="border-color:var(--a);box-shadow:0 0 0 3px color-mix(in oklab, var(--a) 18%, transparent)">
+              </sc-if>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="height:1px;background:var(--line);margin:22px 0 18px;"></div>
+
+      <div style="font-family:'JetBrains Mono';font-size:10px;letter-spacing:.18em;color:var(--mute);text-transform:uppercase;margin-bottom:12px;">Compare me against</div>
+      <div style="display:grid;gap:2px;">
+        <sc-for list="{{ pools }}" as="p" hint-placeholder-count="4">
+          <button onClick="{{ p.onSelect }}" style="appearance:none;cursor:pointer;text-align:left;display:flex;align-items:center;gap:12px;padding:12px 14px;min-height:48px;border:1px solid {{ p.border }};background:{{ p.bg }};color:{{ p.fg }};transition:all 260ms cubic-bezier(.2,.7,.2,1);margin-left:{{ p.indent }};">
+            <span style="width:7px;height:7px;background:{{ p.dot }};flex:none;transition:background 260ms;"></span>
+            <span style="font-family:'Big Shoulders Display';font-weight:700;font-size:19px;letter-spacing:.05em;text-transform:uppercase;">{{ p.label }}</span>
+            <span style="margin-left:auto;font-family:'JetBrains Mono';font-size:10px;letter-spacing:.1em;color:var(--mute);">{{ p.n }}</span>
+          </button>
+        </sc-for>
+      </div>
+
+      <button onClick="{{ submit }}" style="margin-top:22px;width:100%;min-height:64px;appearance:none;cursor:pointer;border:none;background:var(--a);color:#0E1013;font-family:'Big Shoulders Display';font-weight:900;font-size:30px;letter-spacing:.06em;text-transform:uppercase;transition:transform 160ms cubic-bezier(.2,.7,.2,1),filter 200ms,background 620ms cubic-bezier(.2,.7,.2,1);" style-hover="filter:brightness(1.12)" style-active="transform:scale(.985)">Rank me</button>
+
+      <p style="font-family:'JetBrains Mono';font-size:10px;line-height:1.7;letter-spacing:.06em;color:#5F656E;margin:14px 0 0;text-align:center;">{{ validity }}</p>
+    </section>
+
+    <p style="font-family:'JetBrains Mono';font-size:10px;line-height:1.8;letter-spacing:.08em;color:#5F656E;margin:26px 0 0;text-align:center;text-transform:uppercase;">Placeholder distributions · real data pending</p>
+  </div>
+
+  <sc-if value="{{ showResult }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ skipReveal }}" style="position:fixed;inset:0;z-index:40;background:#0B0D10;overflow-y:auto;-webkit-overflow-scrolling:touch;animation:hfa-in 320ms ease both;">
+      <div style="position:fixed;inset:0;pointer-events:none;background:radial-gradient(58% 42% at 50% 30%, color-mix(in oklab, var(--a) 22%, transparent), transparent 70%);animation:hfa-glow 5s ease-in-out infinite;"></div>
+
+      <div style="position:relative;max-width:640px;margin:0 auto;padding:20px 20px 70px;">
+
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding-bottom:26px;">
+          <button onClick="{{ back }}" style="appearance:none;cursor:pointer;background:none;border:1px solid var(--line);color:var(--mute);font-family:'JetBrains Mono';font-size:10px;letter-spacing:.16em;text-transform:uppercase;padding:10px 14px;min-height:40px;transition:all 220ms;" style-hover="color:var(--chalk);border-color:var(--chalk)">Edit</button>
+          <div style="font-family:'JetBrains Mono';font-size:10px;letter-spacing:.16em;color:var(--mute);text-transform:uppercase;">{{ arenaName }}</div>
+        </div>
+
+        <div style="text-align:center;">
+          <div style="font-family:'JetBrains Mono';font-size:11px;letter-spacing:.24em;color:var(--mute);text-transform:uppercase;">Top</div>
+          <div style="font-family:'Big Shoulders Display';font-weight:900;font-size:clamp(110px,34vw,220px);line-height:1;margin-top:10px;color:var(--a);letter-spacing:-.02em;transition:color 620ms;">{{ counter }}<span style="font-size:.34em;letter-spacing:0;">%</span></div>
+          <div style="font-family:'JetBrains Mono';font-size:11px;letter-spacing:.16em;color:var(--mute);text-transform:uppercase;margin-top:10px;">of {{ poolLabel }}</div>
+        </div>
+
+        <sc-if value="{{ revealed }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:34px;animation:hfa-plate 620ms cubic-bezier(.16,.84,.24,1) both;">
+
+            <div style="position:relative;overflow:hidden;border:1px solid var(--line);background:linear-gradient(180deg,#141820,#0F1216);aspect-ratio:1/1;display:grid;place-items:center;">
+              <div style="position:absolute;inset:0;background:radial-gradient(50% 42% at 50% 44%, color-mix(in oklab, var(--a) 26%, transparent), transparent 72%);"></div>
+              <div style="position:absolute;top:0;bottom:0;width:38%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.09),transparent);animation:hfa-sweep 1100ms cubic-bezier(.3,0,.2,1) 260ms both;"></div>
+              <div style="position:relative;text-align:center;padding:24px;">
+                <div style="font-family:'JetBrains Mono';font-size:10px;letter-spacing:.22em;color:var(--mute);text-transform:uppercase;">Illustration slot · {{ animalSlot }}</div>
+                <div style="font-family:'Big Shoulders Display';font-weight:900;font-size:clamp(52px,15vw,96px);line-height:.86;text-transform:uppercase;margin-top:14px;color:var(--chalk);">{{ animal }}</div>
+                <div style="width:56px;height:3px;background:var(--a);margin:18px auto 0;transition:background 620ms;"></div>
+              </div>
+              <div style="position:absolute;left:12px;top:12px;width:16px;height:16px;border-left:1px solid var(--line);border-top:1px solid var(--line);"></div>
+              <div style="position:absolute;right:12px;bottom:12px;width:16px;height:16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);"></div>
+            </div>
+
+            <div style="text-align:center;margin-top:26px;">
+              <div style="font-family:'Big Shoulders Display';font-weight:900;font-size:clamp(34px,9vw,54px);line-height:1;text-transform:uppercase;letter-spacing:.01em;">{{ title }}</div>
+              <div style="font-family:Archivo;font-size:16px;line-height:1.5;color:#A9AEB6;margin-top:12px;max-width:22em;margin-left:auto;margin-right:auto;text-wrap:pretty;">{{ tagline }}</div>
+              <div style="font-family:'JetBrains Mono';font-size:11px;line-height:1.7;letter-spacing:.1em;color:var(--a);text-transform:uppercase;margin-top:18px;transition:color 620ms;">{{ ladder }}</div>
+            </div>
+
+            <div style="margin-top:38px;">
+              <div style="font-family:'JetBrains Mono';font-size:10px;letter-spacing:.2em;color:var(--mute);text-transform:uppercase;margin-bottom:16px;">Breakdown</div>
+              <div style="display:grid;gap:16px;">
+                <sc-for list="{{ breakdown }}" as="b" hint-placeholder-count="3">
+                  <div>
+                    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:7px;">
+                      <div style="font-family:'Big Shoulders Display';font-weight:700;font-size:19px;letter-spacing:.05em;text-transform:uppercase;">{{ b.label }}</div>
+                      <div style="font-family:'JetBrains Mono';font-size:12px;color:#A9AEB6;">{{ b.readout }}</div>
+                    </div>
+                    <div style="height:10px;background:#171B21;border:1px solid var(--line);position:relative;overflow:hidden;">
+                      <div style="position:absolute;inset:0 auto 0 0;background:var(--a);width:{{ b.width }};transition:width 1000ms cubic-bezier(.16,.84,.24,1);transition-delay:{{ b.delay }};"></div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="margin-top:34px;border:1px solid var(--line);background:#101418;min-height:104px;display:grid;place-items:center;">
+              <div style="font-family:'JetBrains Mono';font-size:10px;letter-spacing:.2em;color:#4C525B;text-transform:uppercase;">Advertisement</div>
+            </div>
+
+            <div style="margin-top:34px;border-top:1px solid var(--line);padding-top:26px;">
+              <div style="font-family:'Big Shoulders Display';font-weight:900;font-size:30px;text-transform:uppercase;letter-spacing:.04em;">Post the card</div>
+              <div style="font-family:Archivo;font-size:15px;color:#A9AEB6;margin-top:8px;">Someone in your gym ranks lower. Let them find out.</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px;">
+                <button onClick="{{ share }}" style="appearance:none;cursor:pointer;border:none;min-height:56px;background:var(--a);color:#0E1013;font-family:'Big Shoulders Display';font-weight:900;font-size:21px;letter-spacing:.06em;text-transform:uppercase;transition:filter 200ms,transform 160ms;" style-hover="filter:brightness(1.12)" style-active="transform:scale(.985)">Share</button>
+                <button onClick="{{ copyLink }}" style="appearance:none;cursor:pointer;min-height:56px;background:none;border:1px solid var(--line);color:var(--chalk);font-family:'Big Shoulders Display';font-weight:700;font-size:21px;letter-spacing:.06em;text-transform:uppercase;transition:all 220ms;" style-hover="border-color:var(--chalk)">{{ copyLabel }}</button>
+              </div>
+            </div>
+
+            <div style="margin-top:30px;border:1px solid var(--line);border-left:3px solid var(--a);padding:20px 18px;background:#101418;transition:border-color 620ms;">
+              <div style="font-family:'JetBrains Mono';font-size:10px;letter-spacing:.2em;color:var(--mute);text-transform:uppercase;">Next rank</div>
+              <div style="font-family:'Big Shoulders Display';font-weight:900;font-size:32px;text-transform:uppercase;margin-top:8px;letter-spacing:.02em;">{{ nextAnimal }}</div>
+              <div style="font-family:Archivo;font-size:15px;line-height:1.55;color:#A9AEB6;margin-top:8px;text-wrap:pretty;">{{ nextLine }}</div>
+            </div>
+
+            <div style="text-align:center;margin-top:40px;font-family:'JetBrains Mono';font-size:10px;letter-spacing:.16em;color:#4C525B;text-transform:uppercase;">howfitami.com</div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:420,&quot;height&quot;:900}}">
+const ARENAS = {
+  fit: { word:'FIT', name:'Bodyweight arena', accent:'#C6F24E', blurb:'push, pull, hold', noun:'efforts',
+    ranks:[
+      ['Sloth','The couch fears nothing.'],
+      ['Meerkat','Alert, upright, cardio from panic.'],
+      ['Mountain Goat','Solid. Nobody worries about you.'],
+      ['Spider Monkey','Pull-ups look free from here.'],
+      ['Orangutan','Long arms, longer sets.'],
+      ['Silverback','The gym is your living room.']],
+    metrics:[
+      {k:'pushups',label:'Push-ups',hint:'max unbroken',unit:'reps',base:32,sd:15,bwPow:0.25,fem:0.70},
+      {k:'pullups',label:'Pull-ups',hint:'strict, max',unit:'reps',base:8,sd:6,bwPow:0.55,fem:0.50},
+      {k:'situps',label:'Sit-ups',hint:'in 2 minutes',unit:'reps',base:42,sd:15,bwPow:0.15,fem:0.86}] },
+  strong: { word:'STRONG', name:'Barbell arena', accent:'#FF5B22', blurb:'squat, bench, pull', noun:'lifts',
+    ranks:[
+      ['House Cat','Warm, soft, allergic to the barbell.'],
+      ['Goat','Stubborn. That counts for something.'],
+      ['Ox','You move the weight. No ceremony.'],
+      ['Grizzly','People re-rack faster when you walk past.'],
+      ['Gorilla','The racks go quiet when you walk in.'],
+      ['Mammoth','Extinct numbers. Somehow still lifting.']],
+    metrics:[
+      {k:'squat',label:'Squat',hint:'weight x reps',unit:'kg',base:125,sd:44,bwPow:-0.66,fem:0.62,load:true},
+      {k:'bench',label:'Bench press',hint:'weight x reps',unit:'kg',base:90,sd:32,bwPow:-0.66,fem:0.56,load:true},
+      {k:'deadlift',label:'Deadlift',hint:'weight x reps',unit:'kg',base:150,sd:50,bwPow:-0.66,fem:0.66,load:true}] },
+  fast: { word:'FAST', name:'Speed arena', accent:'#37D8F2', blurb:'road and track', noun:'times',
+    ranks:[
+      ['Tortoise','You will finish. Eventually.'],
+      ['Hare','Fast starts, honest regrets.'],
+      ['Greyhound','Built to chase things.'],
+      ['Horse','Big engine, no drama.'],
+      ['Cheetah','Terrifying for exactly this distance.'],
+      ['Peregrine Falcon','You do not run. You descend.']],
+    metrics:[
+      {k:'r5k',label:'5k',hint:'mm:ss',base:1680,sd:290,time:true,fem:1.13},
+      {k:'r10k',label:'10k',hint:'mm:ss',base:3540,sd:610,time:true,fem:1.13},
+      {k:'rhalf',label:'Half marathon',hint:'h:mm:ss',base:7800,sd:1250,time:true,fem:1.14},
+      {k:'rfull',label:'Marathon',hint:'h:mm:ss',base:16200,sd:2500,time:true,fem:1.15}] },
+  savage: { word:'SAVAGE', name:'Hybrid arena', accent:'#FF3D6E', blurb:'benchmark scores', noun:'benchmarks',
+    ranks:[
+      ['Panda','Elite at rest. World class at snacks.'],
+      ['Husky','Loud, willing, slightly unhinged.'],
+      ['Wolf','You do not skip the ugly parts.'],
+      ['Kangaroo','Everything is explosive. Including you.'],
+      ['Wolverine','Small window, total violence.'],
+      ['Orca','Apex. Nothing in the water argues.']],
+    metrics:[
+      {k:'fran',label:'Fran',hint:'mm:ss',base:330,sd:115,time:true,fem:1.14},
+      {k:'grace',label:'Grace',hint:'mm:ss',base:245,sd:88,time:true,fem:1.16},
+      {k:'murph',label:'Murph',hint:'h:mm:ss',base:3300,sd:700,time:true,fem:1.12}] }
+};
+const ORDER = ['fit','strong','fast','savage'];
+const POOLS = [
+  {k:'country',label:'Indonesia',poss:"Indonesia's",n:'280M',f:0.925,indent:'0px'},
+  {k:'sea',label:'Southeast Asia',poss:"Southeast Asia's",n:'690M',f:0.94,indent:'14px'},
+  {k:'asia',label:'Asia',poss:"Asia's",n:'4.7B',f:0.975,indent:'28px'},
+  {k:'world',label:'The world',poss:'Global',n:'8.1B',f:1,indent:'42px'}
+];
+const TIERS = [0,20,40,62,80,93];
+
+function phi(z){ const t=1/(1+0.2316419*Math.abs(z)); const d=0.3989423*Math.exp(-z*z/2);
+  let p=d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));
+  return z>0?1-p:p; }
+function parseTime(s){ if(!s) return null; const parts=String(s).trim().split(':').map(Number);
+  if(parts.some(isNaN)) return null;
+  if(parts.length===3) return parts[0]*3600+parts[1]*60+parts[2];
+  if(parts.length===2) return parts[0]*60+parts[1];
+  if(parts.length===1) return parts[0]*60; return null; }
+function ordinal(n){ const r=n%100; if(r>=11&&r<=13) return n+'th';
+  return n+({1:'st',2:'nd',3:'rd'}[n%10]||'th'); }
+function fmtTime(sec){ const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=Math.round(sec%60);
+  const p=n=>String(n).padStart(2,'0');
+  return h?h+':'+p(m)+':'+p(s):m+':'+p(s); }
+
+class Component extends DCLogic {
+  state = { arena:'fit', rolls:0, sex:'m', age:'', bw:'', vals:{}, pool:'country',
+            screen:'calc', step:0, counter:0, copied:false };
+
+  componentWillUnmount(){ this.clearTimers(); }
+  applyAccent(a){ try{ document.documentElement.style.setProperty('--a', a); }catch(e){} }
+  clearTimers(){ (this.timers||[]).forEach(clearTimeout); if(this.tick) clearInterval(this.tick); this.timers=[]; }
+
+  reduced(){ return window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches; }
+
+  setVal(k,v){ this.setState(s=>({ vals:{...s.vals,[k]:v} })); }
+
+  // ---- scoring (placeholder distributions) ----
+  metricValue(m){
+    const v=this.state.vals;
+    if(m.time) return parseTime(v[m.k]);
+    const a=parseFloat(v[m.k]);
+    if(isNaN(a)) return null;
+    if(m.load){ const r=parseInt(v[m.k+'_reps'],10);
+      return (!isNaN(r)&&r>1)? a*(1+Math.min(r,12)/30) : a; }
+    return a;
+  }
+  meanFor(m,poolF){
+    const bw=parseFloat(this.state.bw)||75, age=parseFloat(this.state.age)||30;
+    let mean=m.base;
+    if(m.bwPow) mean*=Math.pow(bw/75,-m.bwPow);
+    const ageF = age<=28 ? 1-(28-Math.min(age,28))*0.006 : 1-(age-28)*0.0072;
+    if(m.time) mean/=Math.max(ageF,0.55); else mean*=Math.max(ageF,0.5);
+    if(this.state.sex==='f') mean = m.time ? mean*m.fem : mean*m.fem;
+    if(m.time) mean/=poolF; else mean*=poolF;
+    return mean;
+  }
+  scoreAt(poolKey){
+    const arena=ARENAS[this.state.arena];
+    const poolF=(POOLS.find(p=>p.k===poolKey)||POOLS[0]).f;
+    const rows=[];
+    arena.metrics.forEach(m=>{
+      const x=this.metricValue(m); if(x==null||x<=0) return;
+      const mean=this.meanFor(m,poolF);
+      const sd=m.time? m.sd/poolF : m.sd*poolF;
+      const z=m.time? (mean-x)/sd : (x-mean)/sd;
+      const pct=Math.min(99.4,Math.max(0.6,phi(z)*100));
+      rows.push({m,x,pct});
+    });
+    if(!rows.length) return null;
+    const overall=rows.reduce((a,r)=>a+r.pct,0)/rows.length;
+    return {overall,rows};
+  }
+  tierOf(p){ let i=0; TIERS.forEach((t,n)=>{ if(p>=t) i=n; }); return i; }
+
+  result(){
+    const r=this.scoreAt(this.state.pool); if(!r) return null;
+    const arena=ARENAS[this.state.arena];
+    const pool=POOLS.find(p=>p.k===this.state.pool);
+    const tier=this.tierOf(r.overall);
+    const world=this.scoreAt('world');
+    const wTier=world?this.tierOf(world.overall):tier;
+    return {...r, arena, pool, tier, wTier,
+      animal:arena.ranks[tier][0], tagline:arena.ranks[tier][1],
+      worldAnimal:arena.ranks[wTier][0]};
+  }
+
+  submit=()=>{
+    const r=this.result();
+    if(!r){ this.setState({screen:'calc'}); return; }
+    this.clearTimers();
+    const top=Math.round(100-r.overall);
+    if(this.reduced()){ this.setState({screen:'result',step:2,counter:top,copied:false}); return; }
+    this.setState({screen:'result',step:0,counter:100,copied:false});
+    const start=performance.now(), dur=1150;
+    this.tick=setInterval(()=>{
+      const t=Math.min(1,(performance.now()-start)/dur);
+      const e=1-Math.pow(1-t,3);
+      this.setState({counter:Math.round(100-(100-top)*e)});
+      if(t>=1) clearInterval(this.tick);
+    },32);
+    this.timers=[ setTimeout(()=>this.setState({step:2}),1250) ];
+  };
+  skipReveal=()=>{ const r=this.result(); if(!r||this.state.step>=2) return;
+    this.clearTimers(); this.setState({step:2,counter:Math.round(100-r.overall)}); };
+  back=()=>{ this.clearTimers(); this.setState({screen:'calc',step:0}); };
+
+  share=()=>{ const r=this.result(); if(!r) return;
+    const text=r.pool.poss+' '+r.animal+'. Top '+Math.round(100-r.overall)+'%. howfitami.com';
+    if(navigator.share) navigator.share({title:'howfitami.com',text}).catch(()=>{});
+    else this.copyLink(); };
+  copyLink=()=>{ navigator.clipboard && navigator.clipboard.writeText('https://howfitami.com').catch(()=>{});
+    this.setState({copied:true}); setTimeout(()=>this.setState({copied:false}),1600); };
+
+  renderVals(){
+    const s=this.state, arena=ARENAS[s.arena], A=arena.accent;
+    this.applyAccent(A);
+    const on=(v,fn)=>fn;
+    const sel=(active)=>({ border:active?A:'#2B3037', bg:active?'color-mix(in oklab, '+A+' 16%, transparent)':'#151A1F', fg:active?A:'#8B9099' });
+
+    const fields=arena.metrics.map((m,i)=>({
+      label:m.label, hint:m.hint, delay:(i*70)+'ms',
+      cols:m.load?'1.4fr 1fr':'1fr', hasReps:!!m.load,
+      inputType:m.time?'text':'number', mode:m.time?'text':'decimal',
+      p1:m.time?(m.base>3600?'1:45:00':fmtTime(m.base)):(m.load?'kg':'reps'),
+      v1:s.vals[m.k]||'', on1:e=>this.setVal(m.k,e.target.value),
+      v2:s.vals[m.k+'_reps']||'', on2:e=>this.setVal(m.k+'_reps',e.target.value)
+    }));
+
+    const r=this.result();
+    const showResult=s.screen==='result'&&!!r;
+    const revealed=s.step>=2;
+    const bd=r? r.rows.map((row,i)=>({
+      label:row.m.label,
+      readout:(row.m.time?fmtTime(row.x):Math.round(row.x)+' '+(row.m.unit||''))+'  ·  '+ordinal(Math.round(row.pct)),
+      width:revealed?Math.max(3,Math.round(row.pct))+'%':'0%',
+      delay:(120+i*130)+'ms'
+    })):[];
+
+    let ladder='', nextAnimal='', nextLine='';
+    if(r){
+      ladder = r.tier===r.wTier
+        ? r.pool.poss+' '+r.animal+', and the world agrees'
+        : r.pool.poss+' '+r.animal+', but globally a '+r.worldAnimal;
+      if(r.tier>=5){ nextAnimal='Nothing above you'; nextLine='You are the top of this arena. Go break something in another one.'; }
+      else {
+        const nx=arena.ranks[r.tier+1][0], gap=Math.max(1,Math.round(TIERS[r.tier+1]-r.overall));
+        const weak=r.rows.slice().sort((a,b)=>a.pct-b.pct)[0];
+        let hint;
+        if(weak.m.time){ hint='Take about '+Math.max(20,Math.round(weak.x*0.06))+' seconds off your '+weak.m.label.toLowerCase()+'.'; }
+        else if(weak.m.load){ hint='Add roughly '+Math.max(5,Math.round(weak.x*0.12))+' kg to your '+weak.m.label.toLowerCase()+'.'; }
+        else { hint='Add about '+Math.max(2,Math.round(weak.x*0.22))+' more '+weak.m.label.toLowerCase()+'.'; }
+        nextAnimal=nx; nextLine=gap+' percentile points away. '+hint;
+      }
+    }
+
+    const filled=arena.metrics.filter(m=>this.metricValue(m)).length;
+
+    return {
+      words:ORDER.map(k=>({label:ARENAS[k].word})),
+      currentWord:arena.word,
+      rollTransform:'translateY(-'+(s.rolls%4)*25+'%)',
+      arenaKey:s.arena, arenaName:arena.name, arenaBlurb:arena.blurb,
+      rollWord:()=>{ this.clearTimers(); this.setState(st=>{ const n=st.rolls+1;
+        return {rolls:n,arena:ORDER[n%4],vals:{},screen:'calc',step:0}; }); },
+      sexes:[{key:'m',label:'Male'},{key:'f',label:'Female'}].map(x=>({
+        label:x.label, ...sel(s.sex===x.key), onSelect:()=>this.setState({sex:x.key}) })),
+      age:s.age, bw:s.bw,
+      onAge:e=>this.setState({age:e.target.value}),
+      onBw:e=>this.setState({bw:e.target.value}),
+      fields,
+      pools:POOLS.map(p=>({ label:p.label, n:p.n, indent:p.indent,
+        ...sel(s.pool===p.k), dot:s.pool===p.k?A:'#2B3037',
+        onSelect:()=>this.setState({pool:p.k}) })),
+      submit:this.submit,
+      accentVar:A,
+      validity: filled? 'Ranked on '+filled+' of '+arena.metrics.length+' '+arena.noun+'. Fill more for a sharper read.'
+                      : 'Enter at least one number.',
+      showResult, revealed, counter:s.counter,
+      poolLabel:r?(r.pool.k==='world'?'the world':r.pool.label):'',
+      animal:r?r.animal:'', animalSlot:r?String(r.tier+1).padStart(2,'0')+' / '+r.animal.toUpperCase():'',
+      title:r?(r.pool.poss+' '+r.animal):'', tagline:r?r.tagline:'',
+      ladder, breakdown:bd, nextAnimal, nextLine,
+      share:this.share, copyLink:this.copyLink, copyLabel:s.copied?'Copied':'Copy link',
+      back:this.back, skipReveal:this.skipReveal
+    };
+  }
+}
+
+</script>
+</body>
+</html>

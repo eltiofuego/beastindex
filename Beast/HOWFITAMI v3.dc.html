@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@700;800;900&family=Saira+Condensed:wght@600;700;800&family=Archivo:wght@400;500;600;700&family=Newsreader:ital,wght@1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{ --a:#E8A722; --void:#0B0B0C; --coal:#121315; --steel:#1B1D20; --line:#2C2F34; --bone:#F2F0EA; --dim:#8C9098; }
+  html,body{margin:0;padding:0;background:#0B0B0C;color:#F2F0EA;-webkit-font-smoothing:antialiased;}
+  body{font-family:Archivo,system-ui,sans-serif;}
+  *{box-sizing:border-box;}
+  a{color:var(--a);text-decoration:none;} a:hover{color:var(--bone);}
+  input,button{font-family:inherit;}
+  input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+  input[type=number]{-moz-appearance:textfield;}
+  ::placeholder{color:#5A5E66;}
+  @keyframes flapdown{from{transform:rotateX(0)}to{transform:rotateX(-90deg)}}
+  @keyframes flapup{from{transform:rotateX(90deg)}to{transform:rotateX(0)}}
+  @keyframes fadein{from{opacity:0}to{opacity:1}}
+  @keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  @keyframes slam{0%{opacity:0;transform:scale(1.14)}60%{opacity:1}100%{opacity:1;transform:none}}
+  @keyframes blink{0%,100%{opacity:.35}50%{opacity:1}}
+  @media (prefers-reduced-motion: reduce){*{animation-duration:.01ms !important;transition-duration:.01ms !important;}}
+</style>
+</helmet>
+
+<div style="--a:{{ accentVar }};min-height:100vh;background:var(--void);position:relative;overflow-x:hidden;">
+
+  <section style="position:relative;min-height:88vh;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;">
+
+    <div style="position:absolute;inset:0;background:var(--void);">
+      <sc-for list="{{ photos }}" as="p" hint-placeholder-count="3">
+        <div style="position:absolute;inset:0;opacity:{{ p.opacity }};transition:opacity 620ms cubic-bezier(.4,0,.2,1);">
+          <div style="position:absolute;inset:0;background-image:url({{ p.src }});background-size:cover;background-position:{{ p.pos }};filter:grayscale(1) contrast(1.24) brightness(.62);"></div>
+          <div style="position:absolute;inset:0;background:{{ p.accent }};mix-blend-mode:color;opacity:.72;"></div>
+          <div style="position:absolute;inset:0;background:{{ p.accent }};mix-blend-mode:overlay;opacity:.2;"></div>
+        </div>
+      </sc-for>
+      <div style="position:absolute;inset:0;background:linear-gradient(100deg, rgba(11,11,12,.97) 0%, rgba(11,11,12,.9) 42%, rgba(11,11,12,.5) 72%, rgba(11,11,12,.72) 100%);"></div>
+      <div style="position:absolute;inset:0;background:linear-gradient(to top, var(--void) 0%, rgba(11,11,12,.2) 34%, transparent 60%);"></div>
+    </div>
+
+    <div style="position:relative;z-index:2;max-width:1180px;width:100%;margin:0 auto;padding:22px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:24px;height:24px;background:var(--a);transition:background 620ms cubic-bezier(.4,0,.2,1);"></div>
+          <div style="font-family:'Archivo Expanded';font-weight:800;font-size:14px;letter-spacing:.02em;">HOWFITAMI<span style="color:var(--dim)">.COM</span></div>
+        </div>
+        <div style="font-family:Archivo;font-weight:600;font-size:10px;letter-spacing:.2em;color:var(--dim);text-transform:uppercase;">Free · No signup</div>
+      </div>
+    </div>
+
+    <div style="position:relative;z-index:2;max-width:1180px;width:100%;margin:0 auto;padding:0 22px 44px;">
+      <div style="max-width:660px;">
+
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+          <div style="width:38px;height:4px;background:var(--a);transition:background 620ms cubic-bezier(.4,0,.2,1);"></div>
+          <div style="font-family:Archivo;font-weight:700;font-size:10px;letter-spacing:.24em;color:var(--bone);text-transform:uppercase;">{{ arenaName }}</div>
+        </div>
+
+        <h1 style="font-family:'Saira Condensed';font-weight:800;font-size:clamp(58px,15vw,124px);line-height:.84;letter-spacing:-.01em;margin:0;text-transform:uppercase;display:flex;flex-wrap:wrap;align-items:flex-end;gap:.06em .16em;">
+          <span>How</span>
+          <span key="{{ flipKey }}" onClick="{{ flip }}" role="button" tabIndex="0" aria-label="Change arena" style="display:inline-flex;flex-direction:column;gap:6px;cursor:pointer;">
+            <span style="display:inline-flex;gap:3px;perspective:700px;transition:transform 140ms cubic-bezier(.4,0,.2,1);" style-active="transform:translateY(2px)">
+              <sc-for list="{{ tiles }}" as="t" hint-placeholder-count="6">
+                <span style="position:relative;display:block;width:.58em;height:.96em;background:var(--coal);border:1px solid var(--line);color:var(--bone);overflow:hidden;">
+                  <span style="position:absolute;left:0;right:0;top:0;height:50%;overflow:hidden;">
+                    <span style="display:block;height:.96em;line-height:.96em;text-align:center;">{{ t.cur }}</span>
+                  </span>
+                  <span style="position:absolute;left:0;right:0;bottom:0;height:50%;overflow:hidden;">
+                    <span style="display:block;height:.96em;line-height:.96em;text-align:center;margin-top:-.48em;">{{ t.prev }}</span>
+                  </span>
+                  <span style="position:absolute;left:0;right:0;top:0;height:50%;overflow:hidden;background:var(--coal);transform-origin:50% 100%;backface-visibility:hidden;animation:flapdown 240ms cubic-bezier(.5,0,.9,.6) both;animation-delay:{{ t.d1 }};">
+                    <span style="display:block;height:.96em;line-height:.96em;text-align:center;">{{ t.prev }}</span>
+                  </span>
+                  <span style="position:absolute;left:0;right:0;bottom:0;height:50%;overflow:hidden;background:var(--steel);transform-origin:50% 0%;backface-visibility:hidden;animation:flapup 240ms cubic-bezier(.1,.4,.3,1) both;animation-delay:{{ t.d2 }};">
+                    <span style="display:block;height:.96em;line-height:.96em;text-align:center;margin-top:-.48em;">{{ t.cur }}</span>
+                  </span>
+                  <span style="position:absolute;left:0;right:0;top:50%;height:2px;background:var(--void);z-index:5;"></span>
+                </span>
+              </sc-for>
+            </span>
+            <span style="display:block;height:5px;background:var(--a);transition:background 620ms cubic-bezier(.4,0,.2,1);"></span>
+          </span>
+          <span>Am I?</span>
+        </h1>
+
+        <div style="display:flex;align-items:center;gap:14px;margin-top:24px;flex-wrap:wrap;">
+          <button onClick="{{ flip }}" style="appearance:none;cursor:pointer;background:none;border:1.5px solid var(--bone);color:var(--bone);font-family:Archivo;font-weight:700;font-size:10px;letter-spacing:.2em;text-transform:uppercase;padding:12px 16px;min-height:44px;transition:background 200ms,color 200ms;" style-hover="background:var(--bone);color:var(--void)">Flip the word</button>
+          <sc-if value="{{ showHint }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;align-items:center;gap:8px;animation:blink 1.9s ease-in-out infinite;">
+              <div style="width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-right:7px solid var(--a);"></div>
+              <div style="font-family:Newsreader;font-style:italic;font-size:16px;color:var(--bone);">Tap the word to change arena</div>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section key="{{ arenaKey }}" style="position:relative;z-index:3;background:var(--void);border-top:1px solid var(--line);">
+    <div style="max-width:1180px;margin:0 auto;padding:0 22px 60px;">
+      <div style="max-width:660px;">
+
+        <div style="display:flex;align-items:baseline;gap:12px;padding:34px 0 22px;">
+          <div style="font-family:'Archivo Expanded';font-weight:800;font-size:15px;letter-spacing:.02em;text-transform:uppercase;">The record</div>
+          <div style="font-family:Newsreader;font-style:italic;font-size:16px;color:var(--dim);">three numbers and a country</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px 20px;">
+          <div>
+            <div style="font-family:Archivo;font-weight:700;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:9px;">Sex</div>
+            <div style="display:flex;gap:2px;">
+              <sc-for list="{{ sexes }}" as="s" hint-placeholder-count="2">
+                <button onClick="{{ s.onSelect }}" style="flex:1;appearance:none;cursor:pointer;border:1px solid {{ s.border }};padding:13px 0;min-height:48px;background:{{ s.bg }};color:{{ s.fg }};font-family:'Saira Condensed';font-weight:700;font-size:19px;letter-spacing:.04em;text-transform:uppercase;transition:background 200ms,color 200ms,border-color 200ms;">{{ s.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+              <div style="font-family:Archivo;font-weight:700;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:9px;">Age</div>
+              <input type="number" inputMode="numeric" value="{{ age }}" onChange="{{ onAge }}" placeholder="30" style="width:100%;min-height:48px;background:var(--coal);border:1px solid var(--line);color:var(--bone);font-family:'Saira Condensed';font-weight:700;font-size:24px;padding:0 12px;outline:none;transition:border-color 200ms,background 200ms;" style-focus="border-color:var(--a);background:var(--steel)">
+            </div>
+            <div>
+              <div style="font-family:Archivo;font-weight:700;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:9px;">Weight kg</div>
+              <input type="number" inputMode="decimal" value="{{ bw }}" onChange="{{ onBw }}" placeholder="75" style="width:100%;min-height:48px;background:var(--coal);border:1px solid var(--line);color:var(--bone);font-family:'Saira Condensed';font-weight:700;font-size:24px;padding:0 12px;outline:none;transition:border-color 200ms,background 200ms;" style-focus="border-color:var(--a);background:var(--steel)">
+            </div>
+          </div>
+        </div>
+
+        <div style="height:1px;background:var(--line);margin:30px 0 24px;"></div>
+
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+          <div style="width:22px;height:3px;background:var(--a);transition:background 620ms cubic-bezier(.4,0,.2,1);"></div>
+          <div style="font-family:Archivo;font-weight:700;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--bone);">{{ arenaName }}</div>
+        </div>
+
+        <div style="display:grid;gap:16px;">
+          <sc-for list="{{ fields }}" as="f" hint-placeholder-count="3">
+            <div style="animation:rise 380ms cubic-bezier(.4,0,.2,1) both;animation-delay:{{ f.delay }};">
+              <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:7px;">
+                <div style="font-family:'Saira Condensed';font-weight:700;font-size:22px;letter-spacing:.03em;text-transform:uppercase;">{{ f.label }}</div>
+                <div style="font-family:Newsreader;font-style:italic;font-size:15px;color:var(--dim);">{{ f.hint }}</div>
+              </div>
+              <div style="display:grid;grid-template-columns:{{ f.cols }};gap:8px;">
+                <input type="{{ f.inputType }}" inputMode="{{ f.mode }}" value="{{ f.v1 }}" onChange="{{ f.on1 }}" placeholder="{{ f.p1 }}" style="width:100%;min-height:54px;background:var(--coal);border:1px solid var(--line);color:var(--bone);font-family:'Saira Condensed';font-weight:700;font-size:24px;padding:0 14px;outline:none;transition:border-color 200ms,background 200ms;" style-focus="border-color:var(--a);background:var(--steel)">
+                <sc-if value="{{ f.hasReps }}" hint-placeholder-val="{{ false }}">
+                  <input type="number" inputMode="numeric" value="{{ f.v2 }}" onChange="{{ f.on2 }}" placeholder="reps" style="width:100%;min-height:54px;background:var(--coal);border:1px solid var(--line);color:var(--bone);font-family:'Saira Condensed';font-weight:700;font-size:24px;padding:0 14px;outline:none;transition:border-color 200ms,background 200ms;" style-focus="border-color:var(--a);background:var(--steel)">
+                </sc-if>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="height:1px;background:var(--line);margin:30px 0 24px;"></div>
+
+        <div style="font-family:Archivo;font-weight:700;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);margin-bottom:12px;">Where are you?</div>
+
+        <div style="position:relative;">
+          <input type="text" value="{{ q }}" onChange="{{ onQuery }}" onFocus="{{ onFocus }}" placeholder="Start typing a country" style="width:100%;min-height:56px;background:var(--coal);border:1px solid var(--line);color:var(--bone);font-family:'Saira Condensed';font-weight:700;font-size:24px;padding:0 14px;outline:none;transition:border-color 200ms,background 200ms;" style-focus="border-color:var(--a);background:var(--steel)">
+          <sc-if value="{{ showList }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;left:0;right:0;top:100%;z-index:20;background:var(--steel);border:1px solid var(--line);border-top:none;max-height:280px;overflow-y:auto;">
+              <sc-for list="{{ matches }}" as="c" hint-placeholder-count="6">
+                <button onClick="{{ c.onSelect }}" style="width:100%;appearance:none;cursor:pointer;background:none;border:none;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:12px 14px;min-height:48px;text-align:left;transition:background 160ms;color:var(--bone);" style-hover="background:var(--coal)">
+                  <span style="font-size:19px;line-height:1;">{{ c.flag }}</span>
+                  <span style="font-family:'Saira Condensed';font-weight:700;font-size:19px;letter-spacing:.03em;text-transform:uppercase;">{{ c.name }}</span>
+                  <span style="margin-left:auto;font-family:Newsreader;font-style:italic;font-size:14px;color:var(--dim);">{{ c.region }}</span>
+                </button>
+              </sc-for>
+              <sc-if value="{{ noMatches }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:16px 14px;font-family:Newsreader;font-style:italic;font-size:16px;color:var(--dim);">No country by that name.</div>
+              </sc-if>
+            </div>
+          </sc-if>
+        </div>
+
+        <sc-if value="{{ hasCountry }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:26px;animation:rise 380ms cubic-bezier(.4,0,.2,1) both;">
+            <div style="font-family:Archivo;font-weight:700;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);margin-bottom:12px;">Comparison scope</div>
+            <div style="display:grid;gap:2px;">
+              <sc-for list="{{ scopes }}" as="r" hint-placeholder-count="4">
+                <button onClick="{{ r.onSelect }}" style="appearance:none;cursor:pointer;text-align:left;display:flex;align-items:center;gap:0;padding:0;min-height:48px;border:1px solid {{ r.border }};background:{{ r.bg }};transition:background 200ms,border-color 200ms;color:var(--bone);">
+                  <span style="width:{{ r.indent }};height:100%;flex:none;"></span>
+                  <span style="width:4px;align-self:stretch;background:{{ r.bar }};flex:none;transition:background 200ms;"></span>
+                  <span style="font-family:'Saira Condensed';font-weight:700;font-size:20px;letter-spacing:.03em;text-transform:uppercase;padding-left:12px;">{{ r.label }}</span>
+                  <span style="margin-left:auto;font-family:Newsreader;font-style:italic;font-size:15px;color:var(--dim);padding-right:14px;">{{ r.pool }}</span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <button onClick="{{ submit }}" style="margin-top:30px;width:100%;min-height:70px;appearance:none;cursor:pointer;border:none;background:var(--a);color:var(--void);font-family:'Saira Condensed';font-weight:800;font-size:34px;letter-spacing:.04em;text-transform:uppercase;transition:background 620ms cubic-bezier(.4,0,.2,1),filter 200ms,transform 140ms;" style-hover="filter:brightness(1.1)" style-active="transform:translateY(2px)">Rank me</button>
+
+        <p style="font-family:Newsreader;font-style:italic;font-size:16px;line-height:1.6;color:var(--dim);margin:14px 0 0;text-align:center;">{{ validity }}</p>
+        <p style="font-family:Archivo;font-weight:600;font-size:10px;letter-spacing:.18em;color:#4E525A;margin:26px 0 0;text-align:center;text-transform:uppercase;">Placeholder distributions · real data pending</p>
+      </div>
+    </div>
+  </section>
+
+  <sc-if value="{{ showResult }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:50;background:var(--void);overflow-y:auto;-webkit-overflow-scrolling:touch;animation:fadein 240ms ease both;">
+
+      <div style="position:relative;min-height:76vh;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;">
+        <div style="position:absolute;inset:0;">
+          <div style="position:absolute;inset:0;background-image:url({{ heroPhoto }});background-size:cover;background-position:74% 50%;filter:grayscale(1) contrast(1.3) brightness(.5);"></div>
+          <div style="position:absolute;inset:0;background:var(--a);mix-blend-mode:color;opacity:.7;"></div>
+          <div style="position:absolute;inset:0;background:linear-gradient(to top, var(--void) 4%, rgba(11,11,12,.55) 44%, rgba(11,11,12,.75) 100%);"></div>
+        </div>
+
+        <div style="position:relative;z-index:2;max-width:1180px;width:100%;margin:0 auto;padding:20px 22px 0;display:flex;justify-content:space-between;align-items:center;gap:12px;">
+          <button onClick="{{ back }}" style="appearance:none;cursor:pointer;background:rgba(11,11,12,.6);border:1px solid var(--bone);color:var(--bone);font-family:Archivo;font-weight:700;font-size:10px;letter-spacing:.2em;text-transform:uppercase;padding:11px 15px;min-height:42px;transition:background 200ms,color 200ms;" style-hover="background:var(--bone);color:var(--void)">Back</button>
+          <div style="font-family:Archivo;font-weight:700;font-size:10px;letter-spacing:.22em;color:var(--bone);text-transform:uppercase;">{{ arenaName }}</div>
+        </div>
+
+        <div style="position:relative;z-index:2;max-width:1180px;width:100%;margin:0 auto;padding:0 22px 40px;flex:1;display:flex;flex-direction:column;justify-content:flex-end;">
+          <div style="max-width:760px;animation:slam 520ms cubic-bezier(.2,.8,.25,1) both;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+              <div style="width:32px;height:4px;background:var(--a);"></div>
+              <div style="font-family:Archivo;font-weight:700;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--bone);">Rank {{ plateNo }} of 06</div>
+            </div>
+            <div style="font-family:'Saira Condensed';font-weight:800;font-size:clamp(66px,19vw,168px);line-height:.82;letter-spacing:-.015em;text-transform:uppercase;">{{ animal }}</div>
+            <div style="font-family:Newsreader;font-style:italic;font-size:clamp(19px,5vw,30px);color:#C3C7CE;margin-top:10px;">{{ binomial }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="position:relative;background:var(--a);color:var(--void);">
+        <div style="max-width:1180px;margin:0 auto;padding:30px 22px 34px;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:18px;">
+          <div>
+            <div style="font-family:Archivo;font-weight:700;font-size:10px;letter-spacing:.24em;text-transform:uppercase;opacity:.72;">You rank</div>
+            <div style="font-family:'Saira Condensed';font-weight:800;font-size:clamp(84px,24vw,184px);line-height:.8;letter-spacing:-.02em;margin-top:6px;">TOP {{ counter }}%</div>
+          </div>
+          <div style="text-align:right;max-width:320px;">
+            <div style="font-family:'Saira Condensed';font-weight:800;font-size:clamp(26px,7vw,40px);line-height:.98;text-transform:uppercase;">{{ title }}</div>
+            <div style="font-family:Newsreader;font-style:italic;font-size:17px;line-height:1.45;margin-top:8px;opacity:.82;text-wrap:pretty;">{{ tagline }}</div>
+            <div style="font-family:Archivo;font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-top:12px;">{{ ladder }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="max-width:1180px;margin:0 auto;padding:44px 22px 80px;">
+        <div style="max-width:760px;">
+
+          <div style="font-family:Archivo;font-weight:700;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;">The numbers</div>
+          <div>
+            <sc-for list="{{ breakdown }}" as="b" hint-placeholder-count="3">
+              <div style="border-top:1px solid var(--line);padding:16px 0 14px;">
+                <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;">
+                  <div style="font-family:'Saira Condensed';font-weight:700;font-size:23px;letter-spacing:.03em;text-transform:uppercase;">{{ b.label }}</div>
+                  <div style="display:flex;align-items:baseline;gap:14px;">
+                    <div style="font-family:'Saira Condensed';font-weight:700;font-size:21px;color:#C3C7CE;">{{ b.value }}</div>
+                    <div style="font-family:'Saira Condensed';font-weight:800;font-size:23px;color:var(--a);min-width:2.6em;text-align:right;">{{ b.pct }}</div>
+                  </div>
+                </div>
+                <div style="height:6px;background:var(--coal);margin-top:10px;">
+                  <div style="height:100%;background:var(--a);width:{{ b.width }};transition:width 820ms cubic-bezier(.25,.9,.3,1);transition-delay:{{ b.delay }};"></div>
+                </div>
+              </div>
+            </sc-for>
+            <div style="border-top:1px solid var(--line);"></div>
+          </div>
+
+          <div style="margin-top:34px;border:1px solid var(--line);min-height:104px;display:grid;place-items:center;background:var(--coal);">
+            <div style="font-family:Archivo;font-weight:600;font-size:10px;letter-spacing:.2em;color:#4E525A;text-transform:uppercase;">Advertisement</div>
+          </div>
+
+          <div style="margin-top:38px;border-top:2px solid var(--bone);padding-top:24px;">
+            <div style="font-family:'Saira Condensed';font-weight:800;font-size:clamp(30px,8vw,46px);line-height:.94;text-transform:uppercase;">Post the poster</div>
+            <div style="font-family:Newsreader;font-style:italic;font-size:18px;color:var(--dim);margin-top:8px;">Somebody in your gym is a Sloth. Help them find out.</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px;">
+              <button onClick="{{ download }}" style="appearance:none;cursor:pointer;border:none;min-height:60px;background:var(--a);color:var(--void);font-family:'Saira Condensed';font-weight:800;font-size:22px;letter-spacing:.04em;text-transform:uppercase;transition:filter 200ms,transform 140ms;" style-hover="filter:brightness(1.1)" style-active="transform:translateY(2px)">{{ downloadLabel }}</button>
+              <button onClick="{{ share }}" style="appearance:none;cursor:pointer;min-height:60px;background:none;border:1.5px solid var(--bone);color:var(--bone);font-family:'Saira Condensed';font-weight:700;font-size:22px;letter-spacing:.04em;text-transform:uppercase;transition:background 200ms,color 200ms;" style-hover="background:var(--bone);color:var(--void)">{{ shareLabel }}</button>
+            </div>
+          </div>
+
+          <div style="margin-top:30px;border-left:5px solid var(--a);padding:4px 0 4px 18px;">
+            <div style="font-family:Archivo;font-weight:700;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);">Next rank</div>
+            <div style="font-family:'Saira Condensed';font-weight:800;font-size:34px;text-transform:uppercase;margin-top:6px;letter-spacing:.02em;">{{ nextAnimal }}</div>
+            <div style="font-family:Newsreader;font-style:italic;font-size:17px;line-height:1.5;color:var(--dim);margin-top:6px;text-wrap:pretty;">{{ nextLine }}</div>
+          </div>
+
+          <div style="text-align:center;margin-top:44px;font-family:'Archivo Expanded';font-weight:800;font-size:12px;letter-spacing:.06em;color:#4E525A;">HOWFITAMI.COM</div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:420,&quot;height&quot;:900}}">
+const ARENAS = {
+  fit: { word:'FIT', name:'Bodyweight arena', accent:'#E8A722', photo:'img/fit.jpeg', pos:'72% 50%', noun:'efforts',
+    ranks:[
+      ['Sloth','Bradypus otiosus','The couch fears nothing.'],
+      ['Meerkat','Suricata vigilans','Upright, alert, powered mostly by panic.'],
+      ['Mountain Goat','Oreamnos firmus','Sure footed. Nobody worries about you.'],
+      ['Spider Monkey','Ateles pendulus','Pull-ups look free from here.'],
+      ['Orangutan','Pongo tenax','Long arms, longer sets, never in a hurry.'],
+      ['Silverback','Gorilla dominans','The gym is your living room.']],
+    metrics:[
+      {k:'pushups',label:'Push-ups',hint:'max unbroken',unit:'reps',base:32,sd:15,bwPow:0.25,fem:0.70},
+      {k:'pullups',label:'Pull-ups',hint:'strict, max',unit:'reps',base:8,sd:6,bwPow:0.55,fem:0.50},
+      {k:'situps',label:'Sit-ups',hint:'in two minutes',unit:'reps',base:42,sd:15,bwPow:0.15,fem:0.86}] },
+  strong: { word:'STRONG', name:'Barbell arena', accent:'#C61F1F', photo:'img/strong.jpeg', pos:'68% 50%', noun:'lifts',
+    ranks:[
+      ['House Cat','Felis mollis','Warm, soft, completely uninterested in the barbell.'],
+      ['Goat','Capra obstinata','Stubborn beyond reason. It counts for something.'],
+      ['Ox','Bos laborans','You move the weight. No ceremony.'],
+      ['Grizzly','Ursus gravis','People re-rack faster when you walk past.'],
+      ['Gorilla','Gorilla ferreus','The racks go quiet when you walk in.'],
+      ['Mammoth','Mammuthus redivivus','Extinct numbers. Somehow still lifting.']],
+    metrics:[
+      {k:'squat',label:'Squat',hint:'weight x reps',unit:'kg',base:125,sd:44,bwPow:-0.66,fem:0.62,load:true},
+      {k:'bench',label:'Bench press',hint:'weight x reps',unit:'kg',base:90,sd:32,bwPow:-0.66,fem:0.56,load:true},
+      {k:'deadlift',label:'Deadlift',hint:'weight x reps',unit:'kg',base:150,sd:50,bwPow:-0.66,fem:0.66,load:true}] },
+  fast: { word:'FAST', name:'Speed arena', accent:'#1E5BE8', photo:'img/fast.jpeg', pos:'70% 50%', noun:'times',
+    ranks:[
+      ['Tortoise','Testudo perseverans','You will finish. Eventually.'],
+      ['Hare','Lepus impatiens','Fast starts, honest regrets.'],
+      ['Greyhound','Canis velox','Built to chase things.'],
+      ['Horse','Equus fortis','Big engine, no drama.'],
+      ['Cheetah','Acinonyx fulminans','Terrifying for exactly this distance.'],
+      ['Peregrine Falcon','Falco descendens','You do not run. You descend.']],
+    metrics:[
+      {k:'r5k',label:'5k',hint:'mm:ss',base:1680,sd:290,time:true,fem:1.13},
+      {k:'r10k',label:'10k',hint:'mm:ss',base:3540,sd:610,time:true,fem:1.13},
+      {k:'rhalf',label:'Half marathon',hint:'h:mm:ss',base:7800,sd:1250,time:true,fem:1.14},
+      {k:'rfull',label:'Marathon',hint:'h:mm:ss',base:16200,sd:2500,time:true,fem:1.15}] }
+};
+const ORDER = ['fit','strong','fast'];
+const TIERS = [0,20,40,62,80,93];
+const SCOPE_F = { country:0.94, region:0.96, continent:0.98, world:1 };
+
+const RAW = `Indonesia|ID|Southeast Asia|Asia|280
+Philippines|PH|Southeast Asia|Asia|118
+Vietnam|VN|Southeast Asia|Asia|100
+Thailand|TH|Southeast Asia|Asia|72
+Myanmar|MM|Southeast Asia|Asia|55
+Malaysia|MY|Southeast Asia|Asia|35
+Cambodia|KH|Southeast Asia|Asia|17
+Laos|LA|Southeast Asia|Asia|8
+Singapore|SG|Southeast Asia|Asia|6
+Timor-Leste|TL|Southeast Asia|Asia|1
+Brunei|BN|Southeast Asia|Asia|1
+China|CN|East Asia|Asia|1420
+Japan|JP|East Asia|Asia|123
+South Korea|KR|East Asia|Asia|52
+North Korea|KP|East Asia|Asia|26
+Taiwan|TW|East Asia|Asia|23
+Hong Kong|HK|East Asia|Asia|7
+Mongolia|MN|East Asia|Asia|3
+India|IN|South Asia|Asia|1440
+Pakistan|PK|South Asia|Asia|245
+Bangladesh|BD|South Asia|Asia|173
+Afghanistan|AF|South Asia|Asia|42
+Nepal|NP|South Asia|Asia|31
+Sri Lanka|LK|South Asia|Asia|22
+Bhutan|BT|South Asia|Asia|1
+Maldives|MV|South Asia|Asia|1
+Uzbekistan|UZ|Central Asia|Asia|36
+Kazakhstan|KZ|Central Asia|Asia|20
+Tajikistan|TJ|Central Asia|Asia|10
+Kyrgyzstan|KG|Central Asia|Asia|7
+Turkmenistan|TM|Central Asia|Asia|7
+Iran|IR|Middle East|Asia|89
+Turkey|TR|Middle East|Asia|86
+Iraq|IQ|Middle East|Asia|45
+Saudi Arabia|SA|Middle East|Asia|37
+Yemen|YE|Middle East|Asia|35
+Syria|SY|Middle East|Asia|24
+Jordan|JO|Middle East|Asia|11
+United Arab Emirates|AE|Middle East|Asia|10
+Azerbaijan|AZ|Middle East|Asia|10
+Israel|IL|Middle East|Asia|10
+Lebanon|LB|Middle East|Asia|6
+Palestine|PS|Middle East|Asia|5
+Oman|OM|Middle East|Asia|5
+Kuwait|KW|Middle East|Asia|5
+Georgia|GE|Middle East|Asia|4
+Armenia|AM|Middle East|Asia|3
+Qatar|QA|Middle East|Asia|3
+Bahrain|BH|Middle East|Asia|2
+Cyprus|CY|Middle East|Asia|1
+Germany|DE|Western Europe|Europe|84
+France|FR|Western Europe|Europe|66
+Netherlands|NL|Western Europe|Europe|18
+Belgium|BE|Western Europe|Europe|12
+Austria|AT|Western Europe|Europe|9
+Switzerland|CH|Western Europe|Europe|9
+Luxembourg|LU|Western Europe|Europe|1
+United Kingdom|GB|Northern Europe|Europe|69
+Sweden|SE|Northern Europe|Europe|11
+Denmark|DK|Northern Europe|Europe|6
+Finland|FI|Northern Europe|Europe|6
+Norway|NO|Northern Europe|Europe|6
+Ireland|IE|Northern Europe|Europe|5
+Lithuania|LT|Northern Europe|Europe|3
+Latvia|LV|Northern Europe|Europe|2
+Estonia|EE|Northern Europe|Europe|1
+Iceland|IS|Northern Europe|Europe|1
+Italy|IT|Southern Europe|Europe|59
+Spain|ES|Southern Europe|Europe|48
+Portugal|PT|Southern Europe|Europe|10
+Greece|GR|Southern Europe|Europe|10
+Serbia|RS|Southern Europe|Europe|7
+Croatia|HR|Southern Europe|Europe|4
+Bosnia and Herzegovina|BA|Southern Europe|Europe|3
+Albania|AL|Southern Europe|Europe|3
+North Macedonia|MK|Southern Europe|Europe|2
+Slovenia|SI|Southern Europe|Europe|2
+Montenegro|ME|Southern Europe|Europe|1
+Malta|MT|Southern Europe|Europe|1
+Russia|RU|Eastern Europe|Europe|144
+Poland|PL|Eastern Europe|Europe|38
+Ukraine|UA|Eastern Europe|Europe|38
+Romania|RO|Eastern Europe|Europe|19
+Czechia|CZ|Eastern Europe|Europe|11
+Hungary|HU|Eastern Europe|Europe|10
+Belarus|BY|Eastern Europe|Europe|9
+Bulgaria|BG|Eastern Europe|Europe|6
+Slovakia|SK|Eastern Europe|Europe|5
+Moldova|MD|Eastern Europe|Europe|3
+Nigeria|NG|West Africa|Africa|230
+Ghana|GH|West Africa|Africa|34
+Ivory Coast|CI|West Africa|Africa|29
+Niger|NE|West Africa|Africa|27
+Mali|ML|West Africa|Africa|24
+Burkina Faso|BF|West Africa|Africa|23
+Senegal|SN|West Africa|Africa|18
+Guinea|GN|West Africa|Africa|14
+Benin|BJ|West Africa|Africa|14
+Togo|TG|West Africa|Africa|9
+Sierra Leone|SL|West Africa|Africa|9
+Liberia|LR|West Africa|Africa|5
+Mauritania|MR|West Africa|Africa|5
+Gambia|GM|West Africa|Africa|3
+Ethiopia|ET|East Africa|Africa|129
+Tanzania|TZ|East Africa|Africa|68
+Kenya|KE|East Africa|Africa|56
+Uganda|UG|East Africa|Africa|50
+Mozambique|MZ|East Africa|Africa|34
+Madagascar|MG|East Africa|Africa|31
+Zambia|ZM|East Africa|Africa|21
+Malawi|MW|East Africa|Africa|21
+Somalia|SO|East Africa|Africa|19
+Zimbabwe|ZW|East Africa|Africa|17
+Rwanda|RW|East Africa|Africa|14
+Burundi|BI|East Africa|Africa|14
+South Sudan|SS|East Africa|Africa|12
+Mauritius|MU|East Africa|Africa|1
+Egypt|EG|North Africa|Africa|114
+Sudan|SD|North Africa|Africa|48
+Algeria|DZ|North Africa|Africa|46
+Morocco|MA|North Africa|Africa|38
+Tunisia|TN|North Africa|Africa|12
+Libya|LY|North Africa|Africa|7
+DR Congo|CD|Central Africa|Africa|105
+Cameroon|CM|Central Africa|Africa|29
+Chad|TD|Central Africa|Africa|19
+Congo|CG|Central Africa|Africa|6
+Central African Republic|CF|Central Africa|Africa|6
+Gabon|GA|Central Africa|Africa|2
+South Africa|ZA|Southern Africa|Africa|61
+Angola|AO|Southern Africa|Africa|37
+Botswana|BW|Southern Africa|Africa|3
+Namibia|NA|Southern Africa|Africa|3
+Lesotho|LS|Southern Africa|Africa|2
+Eswatini|SZ|Southern Africa|Africa|1
+United States|US|North America|North America|342
+Mexico|MX|North America|North America|130
+Canada|CA|North America|North America|39
+Guatemala|GT|Central America|North America|18
+Honduras|HN|Central America|North America|11
+Nicaragua|NI|Central America|North America|7
+El Salvador|SV|Central America|North America|6
+Costa Rica|CR|Central America|North America|5
+Panama|PA|Central America|North America|4
+Belize|BZ|Central America|North America|1
+Haiti|HT|Caribbean|North America|12
+Cuba|CU|Caribbean|North America|11
+Dominican Republic|DO|Caribbean|North America|11
+Jamaica|JM|Caribbean|North America|3
+Trinidad and Tobago|TT|Caribbean|North America|1
+Bahamas|BS|Caribbean|North America|1
+Barbados|BB|Caribbean|North America|1
+Brazil|BR|South America|South America|218
+Colombia|CO|South America|South America|53
+Argentina|AR|South America|South America|46
+Peru|PE|South America|South America|34
+Venezuela|VE|South America|South America|29
+Chile|CL|South America|South America|20
+Ecuador|EC|South America|South America|18
+Bolivia|BO|South America|South America|12
+Paraguay|PY|South America|South America|7
+Uruguay|UY|South America|South America|3
+Guyana|GY|South America|South America|1
+Suriname|SR|South America|South America|1
+Australia|AU|Oceania|Oceania|27
+Papua New Guinea|PG|Oceania|Oceania|11
+New Zealand|NZ|Oceania|Oceania|5
+Fiji|FJ|Oceania|Oceania|1
+Solomon Islands|SB|Oceania|Oceania|1
+Vanuatu|VU|Oceania|Oceania|1
+Samoa|WS|Oceania|Oceania|1
+Tonga|TO|Oceania|Oceania|1`;
+
+const COUNTRIES = RAW.split('\n').map(l=>{ const p=l.split('|');
+  return {name:p[0],iso:p[1],region:p[2],continent:p[3],pop:+p[4]}; });
+const WORLD_POP = 8100;
+function flagOf(iso){ return String.fromCodePoint(...iso.split('').map(c=>127397+c.charCodeAt(0))); }
+function sumBy(key,val){ return COUNTRIES.reduce((a,c)=>a+(c[key]===val?c.pop:0),0); }
+function fmtPop(m){ return m>=1000 ? (m/1000).toFixed(1).replace(/\.0$/,'')+'B' : m+'M'; }
+function possessive(n){ return /s$/i.test(n) ? n+"'" : n+"'s"; }
+function latinSub(name){
+  const s=name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z]/g,'');
+  return s.slice(0,9).replace(/[aeiou]+$/,'')+'ensis';
+}
+function phi(z){ const t=1/(1+0.2316419*Math.abs(z)); const d=0.3989423*Math.exp(-z*z/2);
+  let p=d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));
+  return z>0?1-p:p; }
+function ordinal(n){ const r=n%100; if(r>=11&&r<=13) return n+'th';
+  return n+({1:'st',2:'nd',3:'rd'}[n%10]||'th'); }
+function parseTime(s){ if(!s) return null; const parts=String(s).trim().split(':').map(Number);
+  if(parts.some(isNaN)) return null;
+  if(parts.length===3) return parts[0]*3600+parts[1]*60+parts[2];
+  if(parts.length===2) return parts[0]*60+parts[1];
+  if(parts.length===1) return parts[0]*60; return null; }
+function fmtTime(sec){ const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=Math.round(sec%60);
+  const p=n=>String(n).padStart(2,'0');
+  return h?h+':'+p(m)+':'+p(s):m+':'+p(s); }
+function pad6(w){ const n=Math.max(0,6-w.length), l=Math.floor(n/2);
+  return ' '.repeat(l)+w+' '.repeat(n-l); }
+
+class Component extends DCLogic {
+  state = { arena:'fit', prev:'fit', flipKey:0, touched:false,
+            sex:'m', age:'', bw:'', vals:{},
+            q:'', open:false, country:null, scope:'country',
+            screen:'calc', step:0, counter:100, downloading:false, shared:false };
+
+  componentDidMount(){
+    if(this.reduced()) return;
+    const seq=['strong','fast','fit'];
+    this.boot=seq.map((a,i)=>setTimeout(()=>this.go(a,true),400+i*720));
+  }
+  componentWillUnmount(){ this.clearTimers(); (this.boot||[]).forEach(clearTimeout); }
+  clearTimers(){ (this.timers||[]).forEach(clearTimeout); if(this.tick) clearInterval(this.tick); this.timers=[]; }
+  reduced(){ return window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches; }
+
+  go(next,boot){
+    this.clearTimers();
+    this.setState(st=>({ prev:st.arena, arena:next, flipKey:st.flipKey+1,
+      vals:boot?st.vals:{}, screen:'calc', step:0, touched:boot?st.touched:true }));
+  }
+  flip=()=>{ (this.boot||[]).forEach(clearTimeout);
+    this.go(ORDER[(ORDER.indexOf(this.state.arena)+1)%ORDER.length]); };
+
+  setVal(k,v){ this.setState(s=>({ vals:{...s.vals,[k]:v} })); }
+
+  scopeList(){
+    const c=this.state.country; if(!c) return [];
+    const out=[{k:'country',label:c.name,pop:c.pop}];
+    if(c.region!==c.continent) out.push({k:'region',label:c.region,pop:sumBy('region',c.region)});
+    out.push({k:'continent',label:c.continent,pop:sumBy('continent',c.continent)});
+    out.push({k:'world',label:'The world',pop:WORLD_POP});
+    return out;
+  }
+
+  metricValue(m){
+    const v=this.state.vals;
+    if(m.time) return parseTime(v[m.k]);
+    const a=parseFloat(v[m.k]); if(isNaN(a)) return null;
+    if(m.load){ const r=parseInt(v[m.k+'_reps'],10);
+      return (!isNaN(r)&&r>1)? a*(1+Math.min(r,12)/30) : a; }
+    return a;
+  }
+  meanFor(m,f){
+    const bw=parseFloat(this.state.bw)||75, age=parseFloat(this.state.age)||30;
+    let mean=m.base;
+    if(m.bwPow) mean*=Math.pow(bw/75,-m.bwPow);
+    const ageF = age<=28 ? 1-(28-Math.min(age,28))*0.006 : 1-(age-28)*0.0072;
+    if(m.time) mean/=Math.max(ageF,0.55); else mean*=Math.max(ageF,0.5);
+    mean*=m.fem&&this.state.sex==='f'?m.fem:1;
+    if(m.time) mean/=f; else mean*=f;
+    return mean;
+  }
+  scoreAt(scopeKey){
+    const arena=ARENAS[this.state.arena], f=SCOPE_F[scopeKey]||1, rows=[];
+    arena.metrics.forEach(m=>{
+      const x=this.metricValue(m); if(x==null||x<=0) return;
+      const mean=this.meanFor(m,f), sd=m.time? m.sd/f : m.sd*f;
+      const z=m.time? (mean-x)/sd : (x-mean)/sd;
+      rows.push({m,x,pct:Math.min(99.4,Math.max(0.6,phi(z)*100))});
+    });
+    if(!rows.length) return null;
+    return {overall:rows.reduce((a,r)=>a+r.pct,0)/rows.length, rows};
+  }
+  tierOf(p){ let i=0; TIERS.forEach((t,n)=>{ if(p>=t) i=n; }); return i; }
+
+  result(){
+    const c=this.state.country; if(!c) return null;
+    const r=this.scoreAt(this.state.scope); if(!r) return null;
+    const arena=ARENAS[this.state.arena];
+    const tier=this.tierOf(r.overall);
+    const w=this.scoreAt('world'), wTier=w?this.tierOf(w.overall):tier;
+    const scope=this.scopeList().find(s=>s.k===this.state.scope)||this.scopeList()[0];
+    const rank=arena.ranks[tier];
+    return { ...r, arena, tier, wTier, scope, country:c,
+      animal:rank[0], binomial:rank[1]+', subsp. '+latinSub(c.name), tagline:rank[2],
+      worldAnimal:arena.ranks[wTier][0],
+      title: scope.k==='world' ? 'Global '+rank[0] : possessive(scope.label)+' '+rank[0] };
+  }
+  ladderText(r){ return r.tier===r.wTier
+    ? 'Globally, the same verdict'
+    : 'Globally a '+r.worldAnimal; }
+
+  submit=()=>{
+    const r=this.result();
+    if(!r){ if(!this.state.country) this.setState({open:true}); return; }
+    this.clearTimers();
+    const top=Math.round(100-r.overall);
+    if(this.reduced()){ this.setState({screen:'result',step:2,counter:top}); return; }
+    this.setState({screen:'result',step:0,counter:100});
+    const start=performance.now(), dur=1000;
+    this.tick=setInterval(()=>{
+      const t=Math.min(1,(performance.now()-start)/dur), e=1-Math.pow(1-t,3);
+      this.setState({counter:Math.round(100-(100-top)*e)});
+      if(t>=1) clearInterval(this.tick);
+    },32);
+    this.timers=[ setTimeout(()=>this.setState({step:2}),200) ];
+  };
+  back=()=>{ this.clearTimers(); this.setState({screen:'calc',step:0}); };
+
+  loadImg(src){ return new Promise(res=>{ const i=new Image();
+    i.onload=()=>res(i); i.onerror=()=>res(null); i.src=src; }); }
+
+  async drawCard(){
+    const r=this.result(); if(!r) return null;
+    const W=1080,H=1920, cv=document.createElement('canvas');
+    cv.width=W; cv.height=H;
+    const x=cv.getContext('2d');
+    const VOID='#0B0B0C', BONE='#F2F0EA', DIM='#9AA0A8', A=r.arena.accent;
+    try{ await document.fonts.ready; }catch(e){}
+    x.fillStyle=VOID; x.fillRect(0,0,W,H);
+
+    // vertical budget: photo 800 + accent 360 + data strip + 268 challenge bar
+    const ph=800, bh=360, barTop=H-268;
+    const img=await this.loadImg(r.arena.photo);
+    if(img){
+      const ir=img.width/img.height, br=W/ph;
+      let sw=img.width, sh=img.height, sx=0, sy=0;
+      if(ir>br){ sw=img.height*br; sx=(img.width-sw)*0.74; } else { sh=img.width/br; sy=(img.height-sh)/2; }
+      x.save(); x.beginPath(); x.rect(0,0,W,ph); x.clip();
+      x.filter='grayscale(1) contrast(1.3) brightness(.52)';
+      x.drawImage(img,sx,sy,sw,sh,0,0,W,ph);
+      x.filter='none';
+      x.globalCompositeOperation='color'; x.globalAlpha=.7;
+      x.fillStyle=A; x.fillRect(0,0,W,ph);
+      x.globalCompositeOperation='source-over'; x.globalAlpha=1;
+      const g=x.createLinearGradient(0,ph*.3,0,ph);
+      g.addColorStop(0,'rgba(11,11,12,0)'); g.addColorStop(.72,'rgba(11,11,12,.72)'); g.addColorStop(1,VOID);
+      x.fillStyle=g; x.fillRect(0,0,W,ph);
+      x.restore();
+    }
+
+    const L=64, R=W-64;
+    const sp=v=>{ try{ x.letterSpacing=v; }catch(e){} };
+    x.textBaseline='alphabetic'; x.textAlign='left';
+
+    // masthead
+    x.fillStyle=A; x.fillRect(L,72,30,30);
+    x.fillStyle=BONE; sp('1px'); x.font='800 30px "Archivo Expanded", sans-serif';
+    x.fillText('HOWFITAMI.COM',L+46,97); sp('0px');
+
+    // rank label
+    x.fillStyle=A; x.fillRect(L,ph-296,42,7);
+    x.fillStyle=BONE; sp('5px'); x.font='700 22px Archivo, sans-serif';
+    x.fillText('RANK '+String(r.tier+1).padStart(2,'0')+' OF 06',L+58,ph-283); sp('0px');
+
+    // animal name
+    let size=150; sp('-3px');
+    x.font='800 '+size+'px "Saira Condensed", sans-serif';
+    while(x.measureText(r.animal.toUpperCase()).width>R-L && size>62){ size-=4;
+      x.font='800 '+size+'px "Saira Condensed", sans-serif'; }
+    x.fillStyle=BONE; x.fillText(r.animal.toUpperCase(),L,ph-148); sp('0px');
+    x.fillStyle=DIM; x.font='italic 38px Newsreader, serif';
+    x.fillText(r.binomial,L,ph-92);
+
+    // accent block: percentile
+    const top=Math.round(100-r.overall);
+    const by=ph;
+    x.fillStyle=A; x.fillRect(0,by,W,bh);
+    x.fillStyle='rgba(11,11,12,.66)'; sp('5px'); x.font='700 22px Archivo, sans-serif';
+    x.fillText('YOU RANK',L,by+58); sp('0px');
+    x.fillStyle=VOID; sp('-8px'); x.font='800 214px "Saira Condensed", sans-serif';
+    x.fillText('TOP '+top+'%',L,by+228); sp('0px');
+    let ts=52; x.font='800 '+ts+'px "Saira Condensed", sans-serif';
+    while(x.measureText(r.title.toUpperCase()).width>R-L && ts>26){ ts-=2;
+      x.font='800 '+ts+'px "Saira Condensed", sans-serif'; }
+    x.fillText(r.title.toUpperCase(),L,by+292);
+    x.fillStyle='rgba(11,11,12,.72)'; x.font='700 22px Archivo, sans-serif'; sp('3px');
+    x.fillText(this.ladderText(r).toUpperCase(),L,by+336); sp('0px');
+
+    // numbers strip
+    const nRows=Math.min(4,r.rows.length);
+    let my=by+bh+44;
+    x.fillStyle=DIM; sp('5px'); x.font='700 22px Archivo, sans-serif';
+    x.fillText('THE NUMBERS',L,my); sp('0px');
+    my+=22;
+    const rowH=Math.min(104,Math.floor((barTop-30-my)/nRows));
+    r.rows.slice(0,nRows).forEach(row=>{
+      x.strokeStyle='#2C2F34'; x.lineWidth=2;
+      x.beginPath(); x.moveTo(L,my); x.lineTo(R,my); x.stroke();
+      x.fillStyle=BONE; x.font='700 38px "Saira Condensed", sans-serif'; x.textAlign='left';
+      x.fillText(row.m.label.toUpperCase(),L,my+48);
+      x.textAlign='right';
+      x.fillStyle=A; x.font='800 38px "Saira Condensed", sans-serif';
+      x.fillText(ordinal(Math.round(row.pct)),R,my+48);
+      x.fillStyle=DIM; x.font='700 32px "Saira Condensed", sans-serif';
+      x.fillText(row.m.time?fmtTime(row.x):Math.round(row.x)+' '+(row.m.unit||''),R-140,my+48);
+      x.textAlign='left';
+      x.fillStyle='#17191C'; x.fillRect(L,my+62,R-L,9);
+      x.fillStyle=A; x.fillRect(L,my+62,(R-L)*Math.max(.03,row.pct/100),9);
+      my+=rowH;
+    });
+    x.strokeStyle='#2C2F34'; x.lineWidth=2;
+    x.beginPath(); x.moveTo(L,my); x.lineTo(R,my); x.stroke();
+
+    // challenge bar: 268px — two 72px display lines + URL 60px clear
+    x.fillStyle=A; x.fillRect(0,barTop,W,H-barTop);
+    x.fillStyle=VOID; x.textAlign='center'; sp('-1px');
+    x.font='800 72px "Saira Condensed", sans-serif';
+    x.fillText('HOW FIT ARE YOU?',W/2,barTop+92);
+    x.fillText('PROVE IT',W/2,barTop+168); sp('6px');
+    x.font='800 26px "Archivo Expanded", sans-serif';
+    x.fillText('HOWFITAMI.COM',W/2,barTop+228); sp('0px');
+    return cv;
+  }
+
+  download=async()=>{
+    if(this.state.downloading) return;
+    this.setState({downloading:true});
+    try{
+      const cv=await this.drawCard();
+      if(cv) cv.toBlob(b=>{ const u=URL.createObjectURL(b), a=document.createElement('a');
+        a.href=u; a.download='howfitami-poster.png'; a.click();
+        setTimeout(()=>URL.revokeObjectURL(u),4000); },'image/png');
+    }catch(e){}
+    setTimeout(()=>this.setState({downloading:false}),900);
+  };
+  share=async()=>{
+    const r=this.result(); if(!r) return;
+    const text=r.title+'. Top '+Math.round(100-r.overall)+'%. howfitami.com';
+    try{
+      const cv=await this.drawCard();
+      const blob=cv&&await new Promise(res=>cv.toBlob(res,'image/png'));
+      const file=blob&&new File([blob],'howfitami-poster.png',{type:'image/png'});
+      if(file&&navigator.canShare&&navigator.canShare({files:[file]})){
+        await navigator.share({files:[file],text}); return; }
+      if(navigator.share){ await navigator.share({text,title:'howfitami.com'}); return; }
+    }catch(e){ return; }
+    try{ await navigator.clipboard.writeText(text); }catch(e){}
+    this.setState({shared:true}); setTimeout(()=>this.setState({shared:false}),1600);
+  };
+
+  renderVals(){
+    const s=this.state, arena=ARENAS[s.arena], A=arena.accent;
+    try{ document.documentElement.style.setProperty('--a',A); }catch(e){}
+    const cur=pad6(arena.word), prev=pad6(ARENAS[s.prev].word);
+
+    const q=s.q.trim().toLowerCase();
+    const matched = q ? COUNTRIES.filter(c=>c.name.toLowerCase().includes(q))
+        .sort((a,b)=>(a.name.toLowerCase().indexOf(q)-b.name.toLowerCase().indexOf(q))||(b.pop-a.pop)).slice(0,7)
+      : COUNTRIES.slice().sort((a,b)=>b.pop-a.pop).slice(0,7);
+
+    const scopes=this.scopeList().map((sc,i)=>{
+      const active=s.scope===sc.k;
+      return { label:sc.label, pool:fmtPop(sc.pop), indent:(i*13)+'px',
+        border: active?A:'#2C2F34', bg: active?'color-mix(in srgb, '+A+' 13%, #0B0B0C)':'#121315',
+        bar: active?A:'#2C2F34', onSelect:()=>this.setState({scope:sc.k}) };
+    });
+
+    const fields=arena.metrics.map((m,i)=>({
+      label:m.label, hint:m.hint, delay:(i*55)+'ms',
+      cols:m.load?'1.5fr 1fr':'1fr', hasReps:!!m.load,
+      inputType:m.time?'text':'number', mode:m.time?'text':'decimal',
+      p1:m.time?(m.base>3600?'1:45:00':fmtTime(m.base)):(m.load?'kg':'reps'),
+      v1:s.vals[m.k]||'', on1:e=>this.setVal(m.k,e.target.value),
+      v2:s.vals[m.k+'_reps']||'', on2:e=>this.setVal(m.k+'_reps',e.target.value)
+    }));
+
+    const r=this.result();
+    const showResult=s.screen==='result'&&!!r;
+    const revealed=s.step>=2;
+    const bd=r? r.rows.map((row,i)=>({
+      label:row.m.label,
+      value:row.m.time?fmtTime(row.x):Math.round(row.x)+' '+(row.m.unit||''),
+      pct:ordinal(Math.round(row.pct)),
+      width:revealed?Math.max(3,Math.round(row.pct))+'%':'0%',
+      delay:(180+i*130)+'ms'
+    })):[];
+
+    let nextAnimal='', nextLine='';
+    if(r){
+      if(r.tier>=5){ nextAnimal='Nothing above you'; nextLine='Top of the arena. Flip the word and find a weakness.'; }
+      else {
+        const nx=arena.ranks[r.tier+1][0], gap=Math.max(1,Math.round(TIERS[r.tier+1]-r.overall));
+        const weak=r.rows.slice().sort((a,b)=>a.pct-b.pct)[0];
+        const hint = weak.m.time ? 'Take about '+Math.max(20,Math.round(weak.x*0.06))+' seconds off the '+weak.m.label.toLowerCase()+'.'
+          : weak.m.load ? 'Add roughly '+Math.max(5,Math.round(weak.x*0.12))+' kg to the '+weak.m.label.toLowerCase()+'.'
+          : 'Add about '+Math.max(2,Math.round(weak.x*0.22))+' more '+weak.m.label.toLowerCase()+'.';
+        nextAnimal=nx; nextLine=gap+' percentile points away. '+hint;
+      }
+    }
+
+    const filled=arena.metrics.filter(m=>this.metricValue(m)).length;
+
+    return {
+      accentVar:A, flipKey:s.flipKey, arenaKey:s.arena, arenaName:arena.name,
+      heroPhoto:arena.photo,
+      photos:ORDER.map(k=>({ src:ARENAS[k].photo, pos:ARENAS[k].pos,
+        accent:ARENAS[k].accent, opacity: k===s.arena?'1':'0' })),
+      tiles:cur.split('').map((ch,i)=>({
+        cur:ch===' '?'':ch, prev:prev[i]===' '?'':prev[i],
+        d1:(i*46)+'ms', d2:(i*46+230)+'ms' })),
+      flip:this.flip, showHint:!s.touched,
+      sexes:[{k:'m',label:'Male'},{k:'f',label:'Female'}].map(o=>{
+        const a=s.sex===o.k;
+        return { label:o.label, border:a?A:'#2C2F34', bg:a?A:'#121315',
+          fg:a?'#0B0B0C':'#8C9098', onSelect:()=>this.setState({sex:o.k}) }; }),
+      age:s.age, bw:s.bw,
+      onAge:e=>this.setState({age:e.target.value}),
+      onBw:e=>this.setState({bw:e.target.value}),
+      fields,
+      q:s.q, showList:s.open, noMatches:matched.length===0,
+      onQuery:e=>this.setState({q:e.target.value,open:true}),
+      onFocus:()=>this.setState({open:true}),
+      matches:matched.map(c=>({ name:c.name, region:c.region, flag:flagOf(c.iso),
+        onSelect:()=>this.setState({country:c,q:c.name,open:false,scope:'country'}) })),
+      hasCountry:!!s.country, scopes,
+      submit:this.submit,
+      validity: !s.country ? 'Pick a country and enter at least one number.'
+        : filled ? 'Ranked on '+filled+' of '+arena.metrics.length+' '+arena.noun+'. Fill more for a sharper read.'
+        : 'Enter at least one number.',
+      showResult, counter:s.counter,
+      plateNo: r? String(r.tier+1).padStart(2,'0') : '',
+      animal:r?r.animal:'', binomial:r?r.binomial:'', tagline:r?r.tagline:'',
+      title:r?r.title:'', ladder:r?this.ladderText(r):'',
+      breakdown:bd, nextAnimal, nextLine,
+      download:this.download, downloadLabel:s.downloading?'Drawing':'Download poster',
+      share:this.share, shareLabel:s.shared?'Copied':'Share',
+      back:this.back
+    };
+  }
+}
+
+</script>
+</body>
+</html>
